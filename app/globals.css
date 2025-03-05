@@ -2,20 +2,123 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Light theme colors - changed to black/gray theme */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+ 
+    --primary: 0 0% 15%;
+    --primary-foreground: 0 0% 98%;
+ 
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 15%;
+ 
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 45%;
+ 
+    --accent: 0 0% 93%;
+    --accent-foreground: 0 0% 15%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
+    --ring: 0 0% 15%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    /* Dark theme colors - changed to TRUE BLACK theme */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+ 
+    --card: 0 0% 3%;
+    --card-foreground: 0 0% 100%;
+ 
+    --popover: 0 0% 3%;
+    --popover-foreground: 0 0% 100%;
+ 
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+ 
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+ 
+    --muted: 0 0% 7%;
+    --muted-foreground: 0 0% 70%;
+ 
+    --accent: 0 0% 10%;
+    --accent-foreground: 0 0% 100%;
+ 
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+ 
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 0 0% 85%;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
+
+/* Property filter specific styles */
+.property-filter {
+  @apply bg-card text-card-foreground border border-border rounded-lg shadow-sm;
+}
+
+.property-filter-header {
+  @apply bg-muted/50;
+}
+
+.property-filter-input {
+  @apply bg-background border-input focus-visible:ring-ring;
+}
+
+/* Property listing specific styles */
+.property-card {
+  @apply bg-card text-card-foreground border border-border rounded-lg shadow-sm hover:shadow-md transition-all;
+}
+
+.property-card-price {
+  @apply bg-primary text-primary-foreground font-semibold;
+}
+
+.property-card-badge {
+  @apply bg-accent text-accent-foreground;
+}
+
+.property-card-features {
+  @apply text-muted-foreground;
+}
+
+/* Map component styles */
+.map-container {
+  @apply bg-muted border border-border rounded-lg overflow-hidden;
+}
+
+.map-loader {
+  @apply bg-background text-muted-foreground;
+}
+
+/* Theme toggle improved focus */
+.theme-toggle {
+  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
+}
+
