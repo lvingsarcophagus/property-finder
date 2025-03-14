@@ -34,7 +34,7 @@ export default function SearchBar() {
   }
 
   return (
-    <form onSubmit={handleSearch} className="property-filter bg-card text-card-foreground p-6 rounded-lg shadow-md">
+    <form onSubmit={handleSearch} className="bg-white p-6 rounded-lg shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div className="space-y-2">
           <Label htmlFor="location">Location</Label>
@@ -44,13 +44,12 @@ export default function SearchBar() {
             placeholder="Enter location"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className="property-filter-input"
           />
         </div>
         <div className="space-y-2">
           <Label htmlFor="category">Category</Label>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger id="category" className="property-filter-input">
+            <SelectTrigger id="category">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -62,7 +61,7 @@ export default function SearchBar() {
         <div className="space-y-2">
           <Label htmlFor="propertyType">Property Type</Label>
           <Select value={propertyType} onValueChange={setPropertyType}>
-            <SelectTrigger id="propertyType" className="property-filter-input">
+            <SelectTrigger id="propertyType">
               <SelectValue placeholder="Select property type" />
             </SelectTrigger>
             <SelectContent>
@@ -82,7 +81,6 @@ export default function SearchBar() {
             step={1000}
             value={priceRange[0]}
             onChange={(e) => setPriceRange([Number.parseInt(e.target.value), priceRange[1]])}
-            className="property-filter-input"
           />
         </div>
         <div className="col-span-full space-y-2">
@@ -95,7 +93,6 @@ export default function SearchBar() {
             step={1000}
             value={priceRange[1]}
             onChange={(e) => setPriceRange([priceRange[0], Number.parseInt(e.target.value)])}
-            className="property-filter-input"
           />
         </div>
       </div>

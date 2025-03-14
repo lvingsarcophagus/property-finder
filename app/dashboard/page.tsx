@@ -4,30 +4,24 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import EnhancedUserDashboard from "../components/EnhancedUserDashboard"
 import LoadingAnimation from "../components/LoadingAnimation"
+import { useAuth } from "../context/AuthContext"
+import { Button } from "@/components/ui/button"
+import { useTranslation } from "../context/TranslationContext"
 
 export default function DashboardPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
+  const { isAuthenticated, user } = useAuth()
+  const { t } = useTranslation()
 
   useEffect(() => {
-    // Check if user is authenticated
-    // This is a mock authentication check. In a real app, you'd verify the user's session or token
-    const checkAuth = async () => {
-      // Simulating an API call to check authentication
-      const response = await new Promise((resolve) => setTimeout(() => resolve(true), 2500))
-      setIsAuthenticated(response as boolean)
-      if (!response) {
-        router.push("/login")
-      }
-      // Add a slight delay to show the loading animation
-      setTimeout(() => {
-        setIsLoading(false)
-      }, 500)
-    }
+    // Add a slight delay to show the loading animation
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1000)
 
-    checkAuth()
-  }, [router])
+    return () => clearTimeout(timer)
+  }, [])
 
   if (isLoading) {
     return <LoadingAnimation />
@@ -35,15 +29,22 @@ export default function DashboardPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto px-6 py-12 flex items-center justify-center">
-        <div className="animate-pulse text-xl">Loading...</div>
+      <div className="container mx-auto px-6 py-12 flex flex-col items-center justify-center">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
+          <p className="mb-6 text-muted-foreground">
+            You need to be logged in to view the dashboard. Please log in to continue.
+          </p>
+          <Button onClick={() => router.push("/login")}>Go to Login</Button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="container mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+      <p className="text-muted-foreground mb-8">Welcome back, {user?.name || "User"}</p>
       <EnhancedUserDashboard />
     </div>
   )

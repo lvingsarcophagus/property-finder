@@ -1,6 +1,11 @@
+"use client"
+
 import Link from "next/link"
+import { useTranslation } from "../context/TranslationContext"
 
 export default function Footer() {
+  const { t } = useTranslation()
+
   return (
     <footer className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t border-border/40 text-foreground">
       <div className="container mx-auto px-6 py-12">
@@ -14,17 +19,17 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link href="/" className="text-muted-foreground hover:text-primary transition-colors">
-                  Home
+                  {t("home")}
                 </Link>
               </li>
               <li>
                 <Link href="/listings" className="text-muted-foreground hover:text-primary transition-colors">
-                  Listings
+                  {t("listings")}
                 </Link>
               </li>
               <li>
                 <Link href="/dashboard" className="text-muted-foreground hover:text-primary transition-colors">
-                  Dashboard
+                  {t("dashboard")}
                 </Link>
               </li>
             </ul>

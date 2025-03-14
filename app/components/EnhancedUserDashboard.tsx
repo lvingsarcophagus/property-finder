@@ -23,8 +23,6 @@ import {
   Bell,
   Plus,
   Trash2,
-  Mail,
-  MessageSquare,
   AlertCircle,
   CheckCircle,
   Info,
@@ -60,7 +58,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Add this CSS to fix calendar proportions
 const calendarStyles = {
@@ -237,6 +234,9 @@ export default function EnhancedUserDashboard() {
     address: "",
     date: new Date(),
     reminder: true,
+    reminderType: "day",
+    reminderTime: 1,
+    sendEmail: true,
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showSchedule, setShowSchedule] = useState(false)
@@ -256,13 +256,39 @@ export default function EnhancedUserDashboard() {
   const [selectedMessage, setSelectedMessage] = useState<any>(null)
   const [replyContent, setReplyContent] = useState("")
 
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [showEventForm, setShowEventForm] = useState(false)
+  const [newEventForm, setNewEventForm] = useState<{ title: string; date: Date }>({
+    title: "",
+    date: new Date(),
+  })
+  const [eventsForm, setEventsForm] = useState<{ title: string; date: Date }[]>([])
+
+  // Handle calendar date selection
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
+      setShowEventForm(true);
+      setNewEvent(prev => ({
+        ...prev,
+        date: date
+      }));
+    }
+  };
+
+  // Saving a new event (example)
+  const handleAddEventForm = () => {
+    setEventsForm((prev) => [...prev, newEventForm])
+    setShowEventForm(false)
+  }
+
   // Filter events for the selected date
   const selectedDateEvents = events.filter(
     (event) =>
-      date &&
-      event.date.getDate() === date.getDate() &&
-      event.date.getMonth() === date.getMonth() &&
-      event.date.getFullYear() === date.getFullYear(),
+      selectedDate &&
+      event.date.getDate() === selectedDate.getDate() &&
+      event.date.getMonth() === selectedDate.getMonth() &&
+      event.date.getFullYear() === selectedDate.getFullYear(),
   )
 
   // Dates with events for highlighting in calendar
@@ -299,9 +325,18 @@ export default function EnhancedUserDashboard() {
   const handleAddEvent = () => {
     const newId = events.length > 0 ? Math.max(...events.map((e) => e.id)) + 1 : 1
     setEvents([...events, { ...newEvent, id: newId }])
+
+    let reminderText = ""
+    if (newEvent.reminder) {
+      reminderText = `Reminder set for ${newEvent.reminderTime} ${newEvent.reminderType}${newEvent.reminderTime > 1 ? "s" : ""} before`
+      if (newEvent.sendEmail) {
+        reminderText += " with email notification"
+      }
+    }
+
     toast({
       title: "Event scheduled",
-      description: `${newEvent.type === "call" ? "Call" : "Meeting"} with ${newEvent.clientName} on ${format(newEvent.date, "PPP")} at ${format(newEvent.date, "p")}`,
+      description: `${newEvent.type === "call" ? "Call" : "Meeting"} with ${newEvent.clientName} on ${format(newEvent.date, "PPP")} at ${format(newEvent.date, "p")}. ${reminderText}`,
     })
   }
 
@@ -441,17 +476,6 @@ export default function EnhancedUserDashboard() {
           <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           <TabsTrigger value="listings">My Listings</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="messages" className="relative">
-            Messages
-            {unreadMessagesCount > 0 && (
-              <Badge
-                variant="destructive"
-                className="ml-2 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
-              >
-                {unreadMessagesCount}
-              </Badge>
-            )}
-          </TabsTrigger>
           <TabsTrigger value="notifications" className="relative">
             Notifications
             {unreadNotificationsCount > 0 && (
@@ -865,14 +889,8 @@ export default function EnhancedUserDashboard() {
                 <div className="w-full flex justify-center">
                   <Calendar
                     mode="single"
-                    selected={date}
-                    onSelect={(newDate) => {
-                      setDate(newDate)
-                      // Open schedule dialog automatically when a date is selected
-                      if (newDate && selectedDateEvents.length > 0) {
-                        setShowSchedule(true)
-                      }
-                    }}
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
                     className="rounded-md border"
                     style={calendarStyles}
                     modifiers={{
@@ -1021,17 +1039,62 @@ export default function EnhancedUserDashboard() {
                         <Label htmlFor="reminder" className="text-right">
                           Reminder
                         </Label>
-                        <div className="flex items-center space-x-2 col-span-3">
-                          <input
-                            type="checkbox"
-                            id="reminder"
-                            checked={newEvent.reminder}
-                            onChange={(e) => setNewEvent({ ...newEvent, reminder: e.target.checked })}
-                            className="h-4 w-4 rounded border-gray-300"
-                          />
-                          <Label htmlFor="reminder" className="text-sm font-normal">
-                            {newEvent.type === "meeting" ? "Remind me 1 hour before" : "Remind me"}
-                          </Label>
+                        <div className="flex flex-col space-y-2 col-span-3">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              id="reminder"
+                              checked={newEvent.reminder}
+                              onChange={(e) => setNewEvent({ ...newEvent, reminder: e.target.checked })}
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                            <Label htmlFor="reminder" className="text-sm font-normal">
+                              Set reminder
+                            </Label>
+                          </div>
+
+                          {newEvent.reminder && (
+                            <>
+                              <div className="flex items-center space-x-2">
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  max="30"
+                                  value={newEvent.reminderTime}
+                                  onChange={(e) =>
+                                    setNewEvent({ ...newEvent, reminderTime: Number.parseInt(e.target.value) })
+                                  }
+                                  className="w-20"
+                                />
+                                <Select
+                                  value={newEvent.reminderType}
+                                  onValueChange={(value) => setNewEvent({ ...newEvent, reminderType: value })}
+                                >
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue placeholder="Select time" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="minute">Minutes</SelectItem>
+                                    <SelectItem value="hour">Hours</SelectItem>
+                                    <SelectItem value="day">Days</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <span className="text-sm">before</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  id="sendEmail"
+                                  checked={newEvent.sendEmail}
+                                  onChange={(e) => setNewEvent({ ...newEvent, sendEmail: e.target.checked })}
+                                  className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="sendEmail" className="text-sm font-normal">
+                                  Send email notification
+                                </Label>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1207,116 +1270,6 @@ export default function EnhancedUserDashboard() {
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* Messages Tab */}
-        <TabsContent value="messages">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-            <Card className="md:col-span-5">
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>Messages</CardTitle>
-                    <CardDescription>Your inbox and conversations</CardDescription>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={handleMarkAllMessagesRead}>
-                    Mark All Read
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                  {messages.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Mail className="mx-auto h-12 w-12 opacity-30" />
-                      <p className="mt-2">Your inbox is empty</p>
-                    </div>
-                  ) : (
-                    messages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={cn(
-                          "flex items-start p-3 rounded-lg cursor-pointer transition-colors",
-                          message.read ? "bg-secondary/20" : "bg-secondary/40",
-                          selectedMessage?.id === message.id && "bg-secondary",
-                        )}
-                        onClick={() => handleReadMessage(message.id)}
-                      >
-                        <Avatar className="h-10 w-10 mr-3">
-                          <AvatarImage src={message.avatar} alt={message.sender} />
-                          <AvatarFallback>{message.sender.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-start">
-                            <h4 className={cn("font-medium", !message.read && "font-semibold")}>{message.sender}</h4>
-                            <span className="text-xs text-muted-foreground">{format(message.date, "MMM d")}</span>
-                          </div>
-                          <p className="text-sm font-medium truncate">{message.subject}</p>
-                          <p className="text-xs text-muted-foreground truncate">{message.content}</p>
-                        </div>
-                        {!message.read && <div className="ml-2 h-2 w-2 rounded-full bg-primary flex-shrink-0"></div>}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="md:col-span-7">
-              <CardHeader>
-                <CardTitle>
-                  {selectedMessage ? (
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center">
-                        <Avatar className="h-8 w-8 mr-2">
-                          <AvatarImage src={selectedMessage.avatar} alt={selectedMessage.sender} />
-                          <AvatarFallback>{selectedMessage.sender.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3>{selectedMessage.subject}</h3>
-                          <p className="text-sm text-muted-foreground">From: {selectedMessage.sender}</p>
-                        </div>
-                      </div>
-                      <span className="text-sm text-muted-foreground">{format(selectedMessage.date, "PPp")}</span>
-                    </div>
-                  ) : (
-                    "Select a message"
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {selectedMessage ? (
-                  <div className="space-y-6">
-                    <div className="p-4 rounded-lg bg-secondary/20">
-                      <p className="whitespace-pre-line">{selectedMessage.content}</p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="reply">Reply</Label>
-                      <Textarea
-                        id="reply"
-                        placeholder="Type your reply here..."
-                        className="min-h-[120px]"
-                        value={replyContent}
-                        onChange={(e) => setReplyContent(e.target.value)}
-                      />
-                      <div className="flex justify-end">
-                        <Button onClick={handleReplyMessage}>
-                          <Mail className="mr-2 h-4 w-4" />
-                          Send Reply
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-16 text-muted-foreground">
-                    <MessageSquare className="mx-auto h-12 w-12 opacity-30" />
-                    <p className="mt-2">Select a message to view its contents</p>
                   </div>
                 )}
               </CardContent>

@@ -1,46 +1,24 @@
 "use client"
 
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
-import "leaflet/dist/leaflet.css"
-import L from "leaflet"
+import { useEffect, useState } from "react"
+import dynamic from "next/dynamic"
 
-// Fix for default marker icon
-delete L.Icon.Default.prototype._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "/images/marker-icon-2x.png",
-  iconUrl: "/images/marker-icon.png",
-  shadowUrl: "/images/marker-shadow.png",
-})
-
-const properties = [
-  { id: 1, title: "Modern Apartment", lat: 54.8985, lng: 23.9036, price: "€150,000" },
-  { id: 2, title: "Cozy House", lat: 54.9027, lng: 23.9096, price: "€250,000" },
-  { id: 3, title: "Luxury Condo", lat: 54.8968, lng: 23.8813, price: "€350,000" },
-]
+// Dynamically import the map components with no SSR
+const MapWithNoSSR = dynamic(
+  () => import("./DynamicMapComponent"),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full flex items-center justify-center bg-muted/20 rounded-md">
+        <div className="flex flex-col items-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="mt-2 text-sm text-muted-foreground">Loading map...</p>
+        </div>
+      </div>
+    )
+  }
+)
 
 export default function MapComponent() {
-  return (
-    <div className="h-full w-full">
-      <MapContainer 
-        center={[54.8985, 23.9036]}
-        zoom={13} 
-        style={{ height: "100%", width: "100%" }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        {properties.map((property) => (
-          <Marker key={property.id} position={[property.lat, property.lng]}>
-            <Popup>
-              <div>
-                <h3 className="font-semibold">{property.title}</h3>
-                <p>{property.price}</p>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-    </div>
-  )
+  return <MapWithNoSSR />
 }
