@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Pencil,
-  Upload,
   CalendarIcon,
   Clock,
   MapPin,
@@ -58,6 +57,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import Link from "next/link"
 
 // Add this CSS to fix calendar proportions
 const calendarStyles = {
@@ -70,7 +70,7 @@ const userListings = [
   {
     id: 1,
     title: "Modern Apartment",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/studio1.jpg",
     price: 250000,
     category: "sale",
     status: "approved",
@@ -81,7 +81,7 @@ const userListings = [
   {
     id: 2,
     title: "Cozy Studio",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/studio2.jpg",
     price: 1200,
     category: "rent",
     status: "pending",
@@ -92,7 +92,7 @@ const userListings = [
   {
     id: 3,
     title: "Family House",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/studio3.jpg",
     price: 450000,
     category: "sale",
     status: "approved",
@@ -147,7 +147,7 @@ const initialMessages = [
   {
     id: 1,
     sender: "John Smith",
-    avatar: "/placeholder.svg?height=40&width=40",
+    avatar: "/images/agent1.jpg",
     subject: "Inquiry about Modern Apartment",
     content:
       "Hello, I'm interested in your Modern Apartment listing. Is it still available? I would like to schedule a viewing this weekend if possible.",
@@ -157,7 +157,7 @@ const initialMessages = [
   {
     id: 2,
     sender: "PropertyFinder Support",
-    avatar: "/placeholder.svg?height=40&width=40",
+    avatar: "/images/agent2.jpg",
     subject: "Your listing has been approved",
     content:
       "Your listing 'Family House' has been approved and is now visible to potential buyers. You can check the status in your dashboard.",
@@ -167,7 +167,7 @@ const initialMessages = [
   {
     id: 3,
     sender: "Sarah Johnson",
-    avatar: "/placeholder.svg?height=40&width=40",
+    avatar: "/images/agent1.jpg",
     subject: "Question about Cozy Studio",
     content:
       "Hi there, I saw your Cozy Studio listing and I have a few questions. Is parking included? And are utilities covered in the rent?",
@@ -256,39 +256,13 @@ export default function EnhancedUserDashboard() {
   const [selectedMessage, setSelectedMessage] = useState<any>(null)
   const [replyContent, setReplyContent] = useState("")
 
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [showEventForm, setShowEventForm] = useState(false)
-  const [newEventForm, setNewEventForm] = useState<{ title: string; date: Date }>({
-    title: "",
-    date: new Date(),
-  })
-  const [eventsForm, setEventsForm] = useState<{ title: string; date: Date }[]>([])
-
-  // Handle calendar date selection
-  const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setSelectedDate(date);
-      setShowEventForm(true);
-      setNewEvent(prev => ({
-        ...prev,
-        date: date
-      }));
-    }
-  };
-
-  // Saving a new event (example)
-  const handleAddEventForm = () => {
-    setEventsForm((prev) => [...prev, newEventForm])
-    setShowEventForm(false)
-  }
-
   // Filter events for the selected date
   const selectedDateEvents = events.filter(
     (event) =>
-      selectedDate &&
-      event.date.getDate() === selectedDate.getDate() &&
-      event.date.getMonth() === selectedDate.getMonth() &&
-      event.date.getFullYear() === selectedDate.getFullYear(),
+      date &&
+      event.date.getDate() === date.getDate() &&
+      event.date.getMonth() === date.getMonth() &&
+      event.date.getFullYear() === date.getFullYear(),
   )
 
   // Dates with events for highlighting in calendar
@@ -606,101 +580,12 @@ export default function EnhancedUserDashboard() {
                   <CardTitle>My Listings</CardTitle>
                   <CardDescription>Manage your property listings</CardDescription>
                 </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add New Listing
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[550px]">
-                    <DialogHeader>
-                      <DialogTitle>Add New Listing</DialogTitle>
-                      <DialogDescription>
-                        Create a new property listing to showcase to potential clients.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="new-title" className="text-right">
-                          Title
-                        </Label>
-                        <Input
-                          id="new-title"
-                          value={newListing.title}
-                          onChange={(e) => setNewListing({ ...newListing, title: e.target.value })}
-                          className="col-span-3"
-                          placeholder="Modern Apartment"
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="new-price" className="text-right">
-                          Price
-                        </Label>
-                        <Input
-                          id="new-price"
-                          type="number"
-                          value={newListing.price}
-                          onChange={(e) => setNewListing({ ...newListing, price: Number(e.target.value) })}
-                          className="col-span-3"
-                          placeholder="250000"
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="new-location" className="text-right">
-                          Location
-                        </Label>
-                        <Input
-                          id="new-location"
-                          value={newListing.location}
-                          onChange={(e) => setNewListing({ ...newListing, location: e.target.value })}
-                          className="col-span-3"
-                          placeholder="Downtown, City"
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="new-category" className="text-right">
-                          Category
-                        </Label>
-                        <Select
-                          value={newListing.category}
-                          onValueChange={(value) => setNewListing({ ...newListing, category: value })}
-                        >
-                          <SelectTrigger className="col-span-3" id="new-category">
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="sale">For Sale</SelectItem>
-                            <SelectItem value="rent">For Rent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="new-type" className="text-right">
-                          Property Type
-                        </Label>
-                        <Select
-                          value={newListing.propertyType}
-                          onValueChange={(value) => setNewListing({ ...newListing, propertyType: value })}
-                        >
-                          <SelectTrigger className="col-span-3" id="new-type">
-                            <SelectValue placeholder="Select property type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="apartment">Apartment</SelectItem>
-                            <SelectItem value="house">House</SelectItem>
-                            <SelectItem value="commercial">Commercial</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button type="submit" onClick={handleAddListing}>
-                        Add Listing
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                <Button asChild>
+                  <Link href="/listings/new">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Listing
+                  </Link>
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -757,103 +642,12 @@ export default function EnhancedUserDashboard() {
                                   <span>Inquiries: {listing.inquiries}</span>
                                 </div>
                                 <div className="flex space-x-2 mt-2">
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="flex-1"
-                                        onClick={() => handleEdit(listing)}
-                                      >
-                                        <Pencil className="w-4 h-4 mr-2" />
-                                        Edit
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Edit Listing</DialogTitle>
-                                        <DialogDescription>Make changes to your listing here.</DialogDescription>
-                                      </DialogHeader>
-                                      <div className="grid gap-4 py-4">
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label htmlFor="title" className="text-right">
-                                            Title
-                                          </Label>
-                                          <Input
-                                            id="title"
-                                            value={editingListing?.title}
-                                            onChange={(e) =>
-                                              setEditingListing({ ...editingListing, title: e.target.value })
-                                            }
-                                            className="col-span-3"
-                                          />
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label htmlFor="price" className="text-right">
-                                            Price
-                                          </Label>
-                                          <Input
-                                            id="price"
-                                            type="number"
-                                            value={editingListing?.price}
-                                            onChange={(e) =>
-                                              setEditingListing({ ...editingListing, price: Number(e.target.value) })
-                                            }
-                                            className="col-span-3"
-                                          />
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label htmlFor="status" className="text-right">
-                                            Status
-                                          </Label>
-                                          <Select
-                                            value={editingListing?.status}
-                                            onValueChange={(value) =>
-                                              setEditingListing({ ...editingListing, status: value })
-                                            }
-                                          >
-                                            <SelectTrigger className="col-span-3">
-                                              <SelectValue placeholder="Select status" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="approved">Approved</SelectItem>
-                                              <SelectItem value="pending">Pending</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="grid grid-cols-4 items-center gap-4">
-                                          <Label htmlFor="image" className="text-right">
-                                            Image
-                                          </Label>
-                                          <div className="col-span-3">
-                                            <input
-                                              type="file"
-                                              accept="image/*"
-                                              onChange={handleImageUpload}
-                                              className="hidden"
-                                              ref={fileInputRef}
-                                            />
-                                            <Button onClick={triggerFileInput} variant="outline">
-                                              <Upload className="w-4 h-4 mr-2" />
-                                              Upload Image
-                                            </Button>
-                                          </div>
-                                        </div>
-                                        {editingListing?.image && (
-                                          <div className="col-span-4">
-                                            <Image
-                                              src={editingListing.image || "/placeholder.svg"}
-                                              alt="Property"
-                                              width={300}
-                                              height={200}
-                                              objectFit="cover"
-                                            />
-                                          </div>
-                                        )}
-                                      </div>
-                                      <Button onClick={() => handleSaveEdit(editingListing)}>Save changes</Button>
-                                    </DialogContent>
-                                  </Dialog>
+                                  <Button variant="outline" size="sm" className="flex-1" asChild>
+                                    <Link href={`/property/${listing.id}/edit`}>
+                                      <Pencil className="w-4 w-4 mr-2" />
+                                      Edit
+                                    </Link>
+                                  </Button>
 
                                   <Button
                                     variant="destructive"
@@ -889,8 +683,14 @@ export default function EnhancedUserDashboard() {
                 <div className="w-full flex justify-center">
                   <Calendar
                     mode="single"
-                    selected={selectedDate}
-                    onSelect={handleDateSelect}
+                    selected={date}
+                    onSelect={(newDate) => {
+                      setDate(newDate)
+                      // Open schedule dialog automatically when a date is selected
+                      if (newDate && selectedDateEvents.length > 0) {
+                        setShowSchedule(true)
+                      }
+                    }}
                     className="rounded-md border"
                     style={calendarStyles}
                     modifiers={{

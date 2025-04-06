@@ -27,7 +27,7 @@ const userListings = [
   {
     id: 1,
     title: "Modern Apartment",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/studio1.jpg",
     price: 250000,
     category: "sale",
     status: "approved",
@@ -36,7 +36,7 @@ const userListings = [
   {
     id: 2,
     title: "Cozy Studio",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/studio2.jpg",
     price: 1200,
     category: "rent",
     status: "pending",
@@ -45,7 +45,7 @@ const userListings = [
   {
     id: 3,
     title: "Family House",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/studio3.jpg",
     price: 450000,
     category: "sale",
     status: "approved",
@@ -54,7 +54,7 @@ const userListings = [
   {
     id: 4,
     title: "Commercial Space",
-    image: "/placeholder.svg?height=200&width=300",
+    image: "/images/studio4.jpg",
     price: 5000,
     category: "rent",
     status: "pending",

@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { UserCircle, Home, List, LayoutDashboard, Menu, X, LogOut } from "lucide-react"
+import { UserCircle, Home, List, LayoutDashboard, Menu, X, LogOut, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import LanguageSelector from "./LanguageSelector"
 import { useTranslation } from "../context/TranslationContext"
@@ -68,13 +68,15 @@ export default function Header() {
               {t("listings")}
               <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
             </Link>
-            <Link
-              href="/dashboard"
-              className="text-foreground/70 hover:text-primary transition-colors relative group py-1"
-            >
-              {t("dashboard")}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
-            </Link>
+            {isAuthenticated && (
+              <Link
+                href="/dashboard"
+                className="text-foreground/70 hover:text-primary transition-colors relative group py-1"
+              >
+                {t("dashboard")}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">
@@ -94,6 +96,9 @@ export default function Header() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard">Dashboard</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">My Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                       <LogOut className="w-4 h-4 mr-2" />
@@ -152,14 +157,26 @@ export default function Header() {
               <List className="h-5 w-5 text-primary" />
               <span>{t("listings")}</span>
             </Link>
-            <Link
-              href="/dashboard"
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-primary/10 transition-colors"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <LayoutDashboard className="h-5 w-5 text-primary" />
-              <span>{t("dashboard")}</span>
-            </Link>
+            {isAuthenticated && (
+              <Link
+                href="/dashboard"
+                className="flex items-center space-x-2 p-2 rounded-md hover:bg-primary/10 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <LayoutDashboard className="h-5 w-5 text-primary" />
+                <span>{t("dashboard")}</span>
+              </Link>
+            )}
+            {isAuthenticated && (
+              <Link
+                href="/profile"
+                className="flex items-center space-x-2 p-2 rounded-md hover:bg-primary/10 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <User className="h-5 w-5 text-primary" />
+                <span>My Profile</span>
+              </Link>
+            )}
 
             <div className="flex flex-col space-y-2 pt-2 border-t border-border/40">
               {isAuthenticated ? (

@@ -6,6 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from "../context/TranslationContext"
+import { cn } from "@/lib/utils" // Import cn for conditional class names
 
 const listings = [
   {
@@ -64,6 +65,7 @@ interface ListingGridProps {
   filters?: {
     location?: string
     category?: string
+    postType?: string
     propertyType?: string
     minPrice?: number
     maxPrice?: number
@@ -72,67 +74,37 @@ interface ListingGridProps {
 
 export default function ListingGrid({ filters = {} }: ListingGridProps) {
   const { t } = useTranslation()
-  
-  // Convert sqft to square meters for display
-  const sqftToSqm = (sqft: number) => {
-    return Math.round(sqft * 0.093); // 1 sqft is approximately 0.093 m²
-  };
 
   const filteredListings = listings.filter((listing) => {
-    // Filter by location
-    if (filters.location && !listing.location.toLowerCase().includes(filters.location.toLowerCase())) {
-      return false
-    }
-    
-    // Filter by category
-    if (filters.category && listing.category !== filters.category) {
-      return false
-    }
-    
-    // Filter by property type
-    if (filters.propertyType && listing.propertyType !== filters.propertyType) {
-      return false
-    }
-    
-    // Filter by price range
-    if (filters.minPrice && listing.price < filters.minPrice) {
-      return false
-    }
-    if (filters.maxPrice && listing.price > filters.maxPrice) {
-      return false
-    }
-    
+    if (filters.location && !listing.location.toLowerCase().includes(filters.location.toLowerCase())) return false
+    if (filters.category && listing.category !== filters.category) return false
+    if (filters.postType && listing.postType !== filters.postType) return false
+    if (filters.propertyType && listing.propertyType !== filters.propertyType) return false
+    if (filters.minPrice && listing.price < filters.minPrice) return false
+    if (filters.maxPrice && listing.price > filters.maxPrice) return false
     return true
   })
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {filteredListings.map((listing) => (
-        <Card key={listing.id} className="property-card overflow-hidden dark:bg-card dark:border-border dark:text-card-foreground">
+        <Card key={listing.id} className="overflow-hidden">
           <CardHeader className="p-0">
             <div className="relative h-48">
               <Image src={listing.image || "/placeholder.svg"} alt={listing.title} layout="fill" objectFit="cover" />
-              <Badge className="property-card-badge absolute top-2 right-2">
-                {t(listing.type || listing.propertyType)}
-              </Badge>
+              <Badge className="absolute top-2 right-2">{listing.type || listing.propertyType}</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-4">
             <CardTitle className="text-xl mb-2">{listing.title}</CardTitle>
             <p className="text-muted-foreground mb-2">{listing.location}</p>
-            <div className="mb-2">
-              <span className="property-card-price px-3 py-1 rounded-md inline-block">
-                €{listing.price.toLocaleString()}
-                {listing.category === 'rent' && <span className="text-xs ml-1 font-normal">/{t("rent")}</span>}
-              </span>
-            </div>
-            <div className="flex justify-between text-sm property-card-features">
-              {listing.beds && <span>{listing.beds} {t("beds")}</span>}
-              {listing.baths && <span>{listing.baths} {t("baths")}</span>}
-              <span>{sqftToSqm(listing.sqft)} {t("sqrm")}</span>
+            <p className="text-primary font-bold mb-2">${listing.price.toLocaleString()}</p>
+            <div className="flex justify-between text-sm text-muted-foreground">
+              {listing.beds && <span>{listing.beds} beds</span>}
+              <span>{listing.sqft} sqft</span>
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="p-4">
             <Link href={`/property/${listing.id}`} className="w-full">
               <Button variant="outline" className="w-full">
                 {t("viewDetails")}

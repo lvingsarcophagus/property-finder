@@ -33,6 +33,16 @@ export type TranslationKey =
   | "houseNumber"
   | "price"
   | "viewDetails"
+  | "buildingMaterial"
+  | "ownerInfo"
+  | "ownerName"
+  | "ownerPhone"
+  | "ownerDescription"
+  | "invoiceInfo"
+  | "ownerInvoice"
+  | "renterInvoice"
+  | "addPhotos"
+  | "uploadPhotos"
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   en: {
@@ -68,6 +78,16 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     houseNumber: "House Number",
     price: "Price",
     viewDetails: "View Details",
+    buildingMaterial: "Building Material",
+    ownerInfo: "Owner Information",
+    ownerName: "Owner Name",
+    ownerPhone: "Phone Number",
+    ownerDescription: "Owner Description",
+    invoiceInfo: "Invoice Information",
+    ownerInvoice: "Invoice from owner",
+    renterInvoice: "Invoice from renters",
+    addPhotos: "Add Photos",
+    uploadPhotos: "Upload Photos",
   },
   lt: {
     home: "Pagrindinis",
@@ -102,6 +122,16 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     houseNumber: "Namo/buto numeris",
     price: "Kaina",
     viewDetails: "Peržiūrėti detaliau",
+    buildingMaterial: "Statybinė medžiaga",
+    ownerInfo: "Savininko informacija",
+    ownerName: "Savininko vardas",
+    ownerPhone: "Telefono numeris",
+    ownerDescription: "Savininko aprašymas",
+    invoiceInfo: "Sąskaitų informacija",
+    ownerInvoice: "Sąskaita iš savininko",
+    renterInvoice: "Sąskaita iš nuomininkų",
+    addPhotos: "Pridėti nuotraukas",
+    uploadPhotos: "Įkelti nuotraukas",
   },
 }
 

@@ -4,67 +4,36 @@
 
 @layer base {
   :root {
-    /* Light theme colors - black/gray theme */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
- 
-    --primary: 0 0% 15%;
-    --primary-foreground: 0 0% 98%;
- 
-    --secondary: 0 0% 93%;
-    --secondary-foreground: 0 0% 15%;
- 
-    --muted: 0 0% 93%;
-    --muted-foreground: 0 0% 45%;
- 
-    --accent: 0 0% 93%;
-    --accent-foreground: 0 0% 15%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
 
-    --border: 0 0% 85%;
-    --input: 0 0% 85%;
-    --ring: 0 0% 15%;
- 
+    --accent: 216 34% 17%;
+    --accent-foreground: 210 40% 98%;
+
+    --popover: 224 71% 4%;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 216 34% 17%;
+
     --radius: 0.5rem;
-  }
- 
-  .dark {
-    /* TRUE BLACK Dark theme colors */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
- 
-    --card: 0 0% 3%;
-    --card-foreground: 0 0% 98%;
- 
-    --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 98%;
- 
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 0%;
- 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
- 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 70%;
- 
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 98%;
- 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 98%;
- 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 75%;
   }
 }
 
@@ -76,95 +45,5 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-}
-
-/* Property filter specific styles */
-.property-filter {
-  @apply bg-card text-card-foreground border border-border rounded-lg shadow-sm;
-}
-
-.property-filter-header {
-  @apply bg-muted/50;
-}
-
-.property-filter-input {
-  @apply bg-background border-input focus-visible:ring-ring;
-}
-
-/* Property listing specific styles */
-.property-card {
-  @apply bg-card text-card-foreground border border-border rounded-lg shadow-sm hover:shadow-md transition-all;
-}
-
-.property-card-price {
-  @apply bg-primary text-primary-foreground font-semibold px-2 py-1 rounded-md inline-block;
-}
-
-.property-card-badge {
-  @apply bg-accent text-accent-foreground;
-}
-
-.property-card-features {
-  @apply text-muted-foreground;
-}
-
-/* Map component styles */
-.map-container {
-  @apply bg-muted border border-border rounded-lg overflow-hidden;
-}
-
-.map-loader {
-  @apply bg-background text-muted-foreground;
-}
-
-/* Theme toggle improved focus */
-.theme-toggle {
-  @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background;
-}
-
-/* Custom dark mode styles for better contrast and true black feel */
-.dark .property-card {
-  @apply shadow-none;
-}
-
-.dark .property-card-price {
-  @apply text-primary-foreground bg-primary/90 shadow-none;
-}
-
-.dark .button-outline {
-  @apply border-border hover:bg-accent hover:text-accent-foreground;
-}
-
-.dark input::placeholder {
-  @apply text-muted-foreground;
-}
-
-/* Improved dark mode focus styles */
-.dark *:focus-visible {
-  @apply ring-ring;
-}
-
-/* Proper dark mode styling for images */
-.dark img {
-  filter: brightness(0.9);
-}
-
-/* Improved scrollbar styling for dark mode */
-.dark ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-.dark ::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: hsl(var(--accent));
-  border-radius: 5px;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--secondary));
 }
 
