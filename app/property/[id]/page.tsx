@@ -216,8 +216,8 @@ export default function PropertyDetailsPage({ params }: PropertyDetailsPageProps
             <Image
               src={propertyData.images[activeImageIndex] || "/placeholder.svg"}
               alt={propertyData.title}
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: 'cover' }}
               className="rounded-lg"
             />
             <Badge className="absolute top-4 right-4 text-sm px-3 py-1">
@@ -235,8 +235,8 @@ export default function PropertyDetailsPage({ params }: PropertyDetailsPageProps
                 <Image
                   src={image || "/placeholder.svg"}
                   alt={`Thumbnail ${index + 1}`}
-                  layout="fill"
-                  objectFit="cover"
+                  fill
+                  style={{ objectFit: 'cover' }}
                 />
               </div>
             ))}
@@ -470,9 +470,8 @@ export default function PropertyDetailsPage({ params }: PropertyDetailsPageProps
                             <Label htmlFor="rooms">Room Number</Label>
                             <Input id="rooms" type="number" defaultValue={propertyData.rooms} />
                           </div>
-                          <div>
-                            <Label htmlFor="area">Area (m²)</Label>
-                            <Input id="area" type="number" defaultValue={propertyData.size} />
+                          <div>                          <Label htmlFor="size">Area (m²)</Label>
+                          <Input id="size" type="number" defaultValue={propertyData.size} />
                           </div>
                         </div>
                       </div>
@@ -647,7 +646,7 @@ export default function PropertyDetailsPage({ params }: PropertyDetailsPageProps
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">{t("area")}</h3>
-                    <p>{propertyData.area} m²</p>
+                    <p>{propertyData.size} m²</p>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">{t("heating")}</h3>
