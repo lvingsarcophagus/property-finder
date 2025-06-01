@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { createBrowserClient } from '@/lib/supabase-client'
+import { validateEnvVars, getEnvStatus } from '@/lib/env-validation'
 
 export default function SupabaseTestPage() {
+  const [envStatus, setEnvStatus] = useState(getEnvStatus())
   const [testResults, setTestResults] = useState<{
     clientCreation: string
     connection: string
@@ -16,8 +18,22 @@ export default function SupabaseTestPage() {
   })
 
   useEffect(() => {
+    // Update environment status
+    setEnvStatus(getEnvStatus())
+    
     async function runTests() {
       try {
+        // First check if environment variables are available
+        const envValidation = validateEnvVars()
+        if (!envValidation.isValid) {
+          setTestResults(prev => ({ 
+            ...prev, 
+            clientCreation: `Failed: ${envValidation.errors.join(', ')} ❌`,
+            error: 'Environment variables not configured'
+          }))
+          return
+        }
+
         // Test 1: Client Creation
         console.log('Testing Supabase client creation...')
         const supabase = createBrowserClient()
@@ -52,11 +68,29 @@ export default function SupabaseTestPage() {
 
     runTests()
   }, [])
-
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Supabase Connection Test</h1>
+        
+        {/* Environment Status */}
+        <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <h2 className="text-xl font-semibold mb-4">Environment Status</h2>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="font-medium">NEXT_PUBLIC_SUPABASE_URL:</span>
+              <span className="text-sm">{envStatus.hasUrl ? '✅ Configured' : '❌ Missing'}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-medium">NEXT_PUBLIC_SUPABASE_ANON_KEY:</span>
+              <span className="text-sm">{envStatus.hasKey ? '✅ Configured' : '❌ Missing'}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Environment:</span>
+              <span className="text-sm">{envStatus.nodeEnv || 'undefined'}</span>
+            </div>
+          </div>
+        </div>
         
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4">Test Results</h2>

@@ -4,10 +4,17 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  # Environment variables for Supabase
-  # Note: These should be set in Netlify dashboard under Site settings > Environment variables
-  # NEXT_PUBLIC_SUPABASE_URL = "your-supabase-url"
-  # NEXT_PUBLIC_SUPABASE_ANON_KEY = "your-supabase-anon-key"
+  # Netlify will automatically inject environment variables set in the dashboard
+  # Make sure to set these in Site settings > Environment variables:
+  # NEXT_PUBLIC_SUPABASE_URL = "https://rasqxsyaqqboilmajvbu.supabase.co"
+  # NEXT_PUBLIC_SUPABASE_ANON_KEY = "your-anon-key-here"
+
+# Context-specific deployments
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "development"
 
 [[redirects]]
   from = "/*"
