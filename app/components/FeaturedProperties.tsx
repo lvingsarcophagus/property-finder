@@ -3,13 +3,12 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useTranslation } from "../context/TranslationContext"
-import { Card, CardContent } from "@/components/ui/card" // Import Card component
 
 const featuredProperties = [
   {
     id: 1,
     title: "Modern Apartment in Downtown",
-    image: "/images/studio1.jpg",
+    image: "/placeholder.svg?height=400&width=600",
     price: "$250,000",
     location: "Downtown, City",
     beds: 2,
@@ -19,7 +18,7 @@ const featuredProperties = [
   {
     id: 2,
     title: "Spacious Family Home",
-    image: "/images/studio2.jpg",
+    image: "/placeholder.svg?height=400&width=600",
     price: "$450,000",
     location: "Suburbs, City",
     beds: 4,
@@ -29,7 +28,7 @@ const featuredProperties = [
   {
     id: 3,
     title: "Luxury Condo with Ocean View",
-    image: "/images/studio3.jpg",
+    image: "/placeholder.svg?height=400&width=600",
     price: "$750,000",
     location: "Beachfront, City",
     beds: 3,
@@ -49,26 +48,24 @@ export default function FeaturedProperties() {
           <Link
             href={`/property/${property.id}`}
             key={property.id}
-            className="transition duration-300 hover:shadow-lg"
+            className="bg-white rounded-lg shadow-md overflow-hidden transition duration-300 hover:shadow-lg"
           >
-            <Card className="overflow-hidden"> {/* Use Card component for theming */}
-              <div className="relative h-48">
-                <Image src={property.image || "/placeholder.svg"} alt={property.title} layout="fill" objectFit="cover" />
+            <div className="relative h-48">
+              <Image src={property.image || "/placeholder.svg"} alt={property.title} layout="fill" objectFit="cover" />
+            </div>
+            <div className="p-4">
+              <h3 className="text-xl font-semibold mb-2">{property.title}</h3>
+              <p className="text-gray-600 mb-2">{property.location}</p>
+              <p className="text-blue-500 font-bold mb-2">{property.price}</p>
+              <div className="flex justify-between text-sm text-gray-500">
+                <span>{property.beds} beds</span>
+                <span>{property.baths} baths</span>
+                <span>{property.sqft} sqft</span>
               </div>
-              <CardContent className="p-4"> {/* Use CardContent for theming */}
-                <h3 className="text-xl font-semibold mb-2">{property.title}</h3>
-                <p className="text-muted-foreground mb-2">{property.location}</p>
-                <p className="text-primary font-bold mb-2">{property.price}</p>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{property.beds} beds</span>
-                  <span>{property.sqft} sqft</span>
-                </div>
-              </CardContent>
-            </Card>
+            </div>
           </Link>
         ))}
       </div>
     </div>
   )
 }
-

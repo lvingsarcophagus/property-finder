@@ -1,9 +1,9 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { type Language, type TranslationKey, translations } from "../translations"
+import { translations, type Language, type TranslationKey } from "../translations"
 
-type TranslationContextType = {
+interface TranslationContextType {
   language: Language
   setLanguage: (language: Language) => void
   t: (key: TranslationKey) => string
@@ -15,37 +15,38 @@ const TranslationContext = createContext<TranslationContextType>({
   t: (key) => key,
 })
 
-export function TranslationProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("en")
+export const useTranslation = () => useContext(TranslationContext)
+
+export const TranslationProvider = ({ children }: { children: ReactNode }) => {
+  const [language, setLanguageState] = useState<Language>("en")
   const [mounted, setMounted] = useState(false)
-  // Only run on client side
+
   useEffect(() => {
+    // Prevent hydration mismatch
     setMounted(true)
-    const savedLanguage = localStorage.getItem("preferredLanguage") as Language
+
+    // Load language preference from localStorage
+    const savedLanguage = localStorage.getItem("language") as Language | null
     if (savedLanguage && (savedLanguage === "en" || savedLanguage === "lt" || savedLanguage === "ru")) {
-      setLanguage(savedLanguage)
+      setLanguageState(savedLanguage)
+      console.log("Loaded language from localStorage:", savedLanguage)
     }
   }, [])
 
-  // Save language preference to localStorage when it changes
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("preferredLanguage", language)
-      document.documentElement.lang = language
-    }
-  }, [language, mounted])
+  const setLanguage = (newLanguage: Language) => {
+    setLanguageState(newLanguage)
+    localStorage.setItem("language", newLanguage)
+    console.log("Language changed to:", newLanguage)
+  }
 
-  // Translation function
   const t = (key: TranslationKey): string => {
-    if (!translations[language]) return key
-    return translations[language][key] || key
+    // During SSR or before hydration, return English translation to avoid mismatch
+    if (!mounted) {
+      return translations.en[key] || key
+    }
+
+    return translations[language][key] || translations.en[key] || key
   }
 
   return <TranslationContext.Provider value={{ language, setLanguage, t }}>{children}</TranslationContext.Provider>
 }
-
-export function useTranslation() {
-  const context = useContext(TranslationContext)
-  return context
-}
-

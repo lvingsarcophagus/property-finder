@@ -1,82 +1,67 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Globe } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Check, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useTranslation } from "../context/TranslationContext"
-import type { Language } from "../translations"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "../context/TranslationContext"
 
-type LanguageOption = {
-  code: Language
-  name: string
-  flag: string
-  nativeName: string
-}
-
-const languages: LanguageOption[] = [
-  { code: "en", name: "English", nativeName: "English", flag: "🇬🇧" },
-  { code: "lt", name: "Lithuanian", nativeName: "Lietuvių", flag: "🇱🇹" },
-  { code: "ru", name: "Russian", nativeName: "Русский", flag: "🇷🇺" },
+const languages = [
+  { value: "en", label: "English" },
+  { value: "lt", label: "Lietuvių" },
+  { value: "ru", label: "Русский" },
 ]
 
 export default function LanguageSelector() {
   const { language, setLanguage } = useTranslation()
+  const [open, setOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  // Only run on client side
+  // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true)
   }, [])
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="sm" className="flex items-center gap-1">
+      <Button variant="ghost" size="icon" className="w-9 px-0">
         <Globe className="h-4 w-4" />
-        <span className="hidden md:inline-block">🇬🇧 English</span>
-        <span className="md:hidden">🇬🇧</span>
       </Button>
     )
   }
 
-  const currentLanguage = languages.find((lang) => lang.code === language) || languages[0]
-
-  const handleLanguageChange = (lang: LanguageOption) => {
-    console.log("Changing language to:", lang.code)
-    setLanguage(lang.code)
-  }
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="flex items-center gap-1 hover:bg-primary/10 transition-all">
-          <Globe className="h-4 w-4 text-primary" />
-          <span className="hidden md:inline-block">
-            {currentLanguage.flag} {currentLanguage.name}
-          </span>
-          <span className="md:hidden">{currentLanguage.flag}</span>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" role="combobox" aria-expanded={open} className="w-9 px-0" aria-label="Select language">
+          <Globe className="h-4 w-4" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[150px]">
-        {languages.map((lang) => (
-          <DropdownMenuItem
-            key={lang.code}
-            onClick={() => handleLanguageChange(lang)}
-            className={cn(
-              "cursor-pointer flex items-center py-2 px-3 hover:bg-primary/10 transition-colors",
-              lang.code === language && "bg-primary/5 font-medium",
-            )}
-          >
-            <span className="mr-2 text-lg">{lang.flag}</span>
-            <div className="flex flex-col">
-              <span>{lang.name}</span>
-              <span className="text-xs text-muted-foreground">{lang.nativeName}</span>
-            </div>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Search language..." />
+          <CommandList>
+            <CommandEmpty>No language found.</CommandEmpty>
+            <CommandGroup>
+              {languages.map((lang) => (
+                <CommandItem
+                  key={lang.value}
+                  value={lang.value}
+                  onSelect={(currentValue) => {
+                    setLanguage(currentValue as "en" | "lt" | "ru")
+                    setOpen(false)
+                  }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", language === lang.value ? "opacity-100" : "opacity-0")} />
+                  {lang.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   )
 }
-

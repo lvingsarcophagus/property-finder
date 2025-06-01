@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useTranslation } from "../../../context/TranslationContext"
 import { useAuth } from "../../../context/AuthContext"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/components/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { Checkbox } from "@/components/ui/checkbox"
 
@@ -25,7 +25,7 @@ const properties = [
   {
     id: "1",
     title: "Modern Apartment in Downtown",
-    images: ["/images/studio1.jpg", "/images/studio2.jpg"],
+    images: ["/placeholder.svg?height=600&width=800", "/placeholder.svg?height=600&width=800"],
     price: 250000,
     rentPrice: 1200,
     category: "sale",
@@ -37,7 +37,7 @@ const properties = [
     floor: 3,
     totalFloors: 5,
     rooms: 3,
-    size: 75,
+    area: 75,
     description:
       "This beautiful modern apartment is located in the heart of the city. It features high ceilings, large windows that allow plenty of natural light, and a recently renovated kitchen with high-end appliances. The building has an elevator and secure parking. Perfect for professionals or small families looking for comfort and convenience in a central location.",
     amenities: ["Elevator", "Parking", "Balcony", "Security System"],
@@ -58,7 +58,7 @@ const properties = [
   {
     id: "2",
     title: "Spacious Family Home",
-    images: ["/images/studio2.jpg", "/images/studio3.jpg"],
+    images: ["/placeholder.svg?height=600&width=800", "/placeholder.svg?height=600&width=800"],
     price: 450000,
     rentPrice: 2500,
     category: "sale",
@@ -91,7 +91,7 @@ const properties = [
   {
     id: "3",
     title: "Luxury Condo with Ocean View",
-    images: ["/images/studio3.jpg", "/images/studio4.jpg"],
+    images: ["/placeholder.svg?height=600&width=800", "/placeholder.svg?height=600&width=800"],
     price: 750000,
     rentPrice: 3500,
     category: "sale",
@@ -146,7 +146,7 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
     heatingType: "",
     floor: "",
     rooms: "",
-    size: "",
+    area: "",
     // Pricing
     salePrice: "",
     rentPrice: "",
@@ -183,7 +183,7 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
         heatingType: property.heatingType,
         floor: property.floor.toString(),
         rooms: property.rooms.toString(),
-        size: property.size.toString(),
+        area: property.area.toString(),
         salePrice: property.price.toString(),
         rentPrice: property.rentPrice.toString(),
         ownerInvoice: property.ownerInvoice,
@@ -487,12 +487,12 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
                       />
                     </div>
                     <div>
-                      <Label htmlFor="size">Area (m²)</Label>
+                      <Label htmlFor="area">Area (m²)</Label>
                       <Input
-                        id="size"
-                        name="size"
+                        id="area"
+                        name="area"
                         type="number"
-                        value={formData.size}
+                        value={formData.area}
                         onChange={handleInputChange}
                         placeholder="e.g. 75"
                       />
@@ -533,7 +533,7 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="salePrice">Sale Price (€)</Label>
+                      <Label htmlFor="salePrice">Sale Price ($)</Label>
                       <Input
                         id="salePrice"
                         name="salePrice"
@@ -544,7 +544,7 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
                       />
                     </div>
                     <div>
-                      <Label htmlFor="rentPrice">Rent Price (€/month)</Label>
+                      <Label htmlFor="rentPrice">Rent Price ($/month)</Label>
                       <Input
                         id="rentPrice"
                         name="rentPrice"
@@ -595,8 +595,8 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
                           <Image
                             src={photo || "/placeholder.svg"}
                             alt={`Property photo ${index + 1}`}
-                            fill
-                            style={{ objectFit: 'cover' }}
+                            layout="fill"
+                            objectFit="cover"
                           />
                         </div>
                         <Button
@@ -708,4 +708,3 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
     </div>
   )
 }
-

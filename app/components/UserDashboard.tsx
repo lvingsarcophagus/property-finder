@@ -27,7 +27,7 @@ const userListings = [
   {
     id: 1,
     title: "Modern Apartment",
-    image: "/images/studio1.jpg",
+    image: "/placeholder.svg?height=200&width=300",
     price: 250000,
     category: "sale",
     status: "approved",
@@ -36,7 +36,7 @@ const userListings = [
   {
     id: 2,
     title: "Cozy Studio",
-    image: "/images/studio2.jpg",
+    image: "/placeholder.svg?height=200&width=300",
     price: 1200,
     category: "rent",
     status: "pending",
@@ -45,7 +45,7 @@ const userListings = [
   {
     id: 3,
     title: "Family House",
-    image: "/images/studio3.jpg",
+    image: "/placeholder.svg?height=200&width=300",
     price: 450000,
     category: "sale",
     status: "approved",
@@ -54,7 +54,7 @@ const userListings = [
   {
     id: 4,
     title: "Commercial Space",
-    image: "/images/studio4.jpg",
+    image: "/placeholder.svg?height=200&width=300",
     price: 5000,
     category: "rent",
     status: "pending",
@@ -324,4 +324,3 @@ export default function UserDashboard() {
     </div>
   )
 }
-

@@ -1,17 +1,17 @@
-import "./globals.css"
+import type React from "react"
+import type { Metadata } from "next"
 import { Inter } from "next/font/google"
-import Header from "./components/Header"
-import Footer from "./components/Footer"
+import "./globals.css"
+import { AuthProvider } from "./context/AuthContext"
 import { ThemeProvider } from "./components/ThemeProvider"
 import { TranslationProvider } from "./context/TranslationContext"
-import { AuthProvider } from "./context/AuthContext"
-import type React from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata = {
-  title: "PropertyFinder",
-  description: "Find your dream property",
+export const metadata: Metadata = {
+  title: "PropertyPro - Professional Real Estate Platform",
+  description:
+    "The ultimate platform for real estate professionals to manage properties, clients, and grow their business.",
 }
 
 export default function RootLayout({
@@ -20,19 +20,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
-      <body className={`${inter.className} min-h-screen bg-background text-foreground flex flex-col`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <AuthProvider>
-            <TranslationProvider>
-              <Header />
-              <main className="flex-grow">{children}</main>
-              <Footer />
-            </TranslationProvider>
-          </AuthProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <TranslationProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </TranslationProvider>
         </ThemeProvider>
       </body>
     </html>
   )
 }
-

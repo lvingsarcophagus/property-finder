@@ -36,7 +36,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/components/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 
 // Mock data for properties and users
@@ -103,7 +103,7 @@ const userActivityData = [
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]
 
-export default function AdminDashboard() {
+export function AdminDashboard() {
   const [newProperty, setNewProperty] = useState({
     title: "",
     price: "",
@@ -626,3 +626,5 @@ export default function AdminDashboard() {
   )
 }
 
+// Also export as default for backward compatibility
+export default AdminDashboard

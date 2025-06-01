@@ -1,17 +1,31 @@
-import type { Metadata } from "next"
-import AdminDashboard from "../components/AdminDashboard"
+import { createServerClient } from "@/lib/supabase"
+import { redirect } from "next/navigation"
+import { AdminDashboard } from "@/app/components/AdminDashboard"
 
-export const metadata: Metadata = {
-  title: "Admin Dashboard | PropertyFinder",
-  description: "Manage properties and users",
+export default async function AdminPage() {
+  const supabase = createServerClient()
+
+  // Check if user is authenticated and has admin role
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  if (!session) {
+    redirect("/login?redirect=/admin")
+  }
+
+  // Get user profile to check role
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).single()
+
+  // If not admin, redirect to dashboard
+  if (!profile || profile.role !== "admin") {
+    redirect("/dashboard")
+  }
+
+  // Fetch admin data
+  const { data: users } = await supabase.from("profiles").select("*").order("created_at", { ascending: false })
+
+  const { data: properties } = await supabase.from("properties").select("*").order("created_at", { ascending: false })
+
+  return <AdminDashboard users={users || []} properties={properties || []} />
 }
-
-export default function AdminPage() {
-  return (
-    <div className="container mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-      <AdminDashboard />
-    </div>
-  )
-}
-

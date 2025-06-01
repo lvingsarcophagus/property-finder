@@ -27,7 +27,7 @@ import {
   Info,
   Heart,
 } from "lucide-react"
-import { format } from "date-fns"
+import { format, addHours, addMinutes, addDays } from "date-fns"
 import {
   Dialog,
   DialogContent,
@@ -55,14 +55,17 @@ import {
 import Image from "next/image"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/components/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import Link from "next/link"
+import { useTranslation } from "../context/TranslationContext"
+import { getBrowserClient } from "@/lib/supabase"
+import { useAuth } from "../context/AuthContext"
 
 // Add this CSS to fix calendar proportions
 const calendarStyles = {
-  "--day-size": "36px",
-  "--day-margin": "2px",
+  "--day-size": "40px",
+  "--day-margin": "4px",
 } as React.CSSProperties
 
 // Mock data for user's listings
@@ -70,7 +73,7 @@ const userListings = [
   {
     id: 1,
     title: "Modern Apartment",
-    image: "/images/studio1.jpg",
+    image: "/placeholder.svg?height=200&width=300",
     price: 250000,
     category: "sale",
     status: "approved",
@@ -81,7 +84,7 @@ const userListings = [
   {
     id: 2,
     title: "Cozy Studio",
-    image: "/images/studio2.jpg",
+    image: "/placeholder.svg?height=200&width=300",
     price: 1200,
     category: "rent",
     status: "pending",
@@ -92,7 +95,7 @@ const userListings = [
   {
     id: 3,
     title: "Family House",
-    image: "/images/studio3.jpg",
+    image: "/placeholder.svg?height=200&width=300",
     price: 450000,
     category: "sale",
     status: "approved",
@@ -120,119 +123,20 @@ const propertyTypeData = [
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28"]
 
-// Mock data for calendar events
-const initialEvents = [
-  {
-    id: 1,
-    type: "call",
-    clientName: "John Smith",
-    phoneNumber: "555-123-4567",
-    description: "Discuss property listing https://propertyfinder.com/listing/123 - Client interested in pricing",
-    date: new Date(2023, 5, 15, 10, 30),
-    reminder: true,
-  },
-  {
-    id: 2,
-    type: "meeting",
-    clientName: "Sarah Johnson",
-    phoneNumber: "555-987-6543",
-    address: "123 Main St, Anytown, CA",
-    date: new Date(2023, 5, 18, 14, 0),
-    reminder: true,
-  },
-]
-
-// Mock data for messages
-const initialMessages = [
-  {
-    id: 1,
-    sender: "John Smith",
-    avatar: "/images/agent1.jpg",
-    subject: "Inquiry about Modern Apartment",
-    content:
-      "Hello, I'm interested in your Modern Apartment listing. Is it still available? I would like to schedule a viewing this weekend if possible.",
-    date: new Date(2023, 5, 15, 10, 30),
-    read: false,
-  },
-  {
-    id: 2,
-    sender: "PropertyFinder Support",
-    avatar: "/images/agent2.jpg",
-    subject: "Your listing has been approved",
-    content:
-      "Your listing 'Family House' has been approved and is now visible to potential buyers. You can check the status in your dashboard.",
-    date: new Date(2023, 5, 14, 15, 45),
-    read: true,
-  },
-  {
-    id: 3,
-    sender: "Sarah Johnson",
-    avatar: "/images/agent1.jpg",
-    subject: "Question about Cozy Studio",
-    content:
-      "Hi there, I saw your Cozy Studio listing and I have a few questions. Is parking included? And are utilities covered in the rent?",
-    date: new Date(2023, 5, 13, 9, 15),
-    read: false,
-  },
-]
-
-// Mock data for notifications
-const initialNotifications = [
-  {
-    id: 1,
-    type: "info",
-    title: "New feature available",
-    description: "You can now schedule virtual tours for your properties",
-    date: new Date(2023, 5, 16, 8, 0),
-    read: false,
-  },
-  {
-    id: 2,
-    type: "success",
-    title: "Listing approved",
-    description: "Your listing 'Family House' has been approved",
-    date: new Date(2023, 5, 15, 14, 30),
-    read: true,
-  },
-  {
-    id: 3,
-    type: "alert",
-    title: "Payment reminder",
-    description: "Your subscription will renew in 3 days",
-    date: new Date(2023, 5, 14, 10, 0),
-    read: false,
-  },
-  {
-    id: 4,
-    type: "warning",
-    title: "Listing views dropping",
-    description: "Your 'Cozy Studio' listing has seen fewer views this week",
-    date: new Date(2023, 5, 13, 16, 45),
-    read: false,
-  },
-  {
-    id: 5,
-    type: "favorite",
-    title: "New favorite",
-    description: "Someone added your 'Modern Apartment' to their favorites",
-    date: new Date(2023, 5, 12, 11, 20),
-    read: true,
-  },
-]
-
 export default function EnhancedUserDashboard() {
+  const { t } = useTranslation()
+  const { user } = useAuth()
   const [listings, setListings] = useState(userListings)
   const [selectedPropertyType, setSelectedPropertyType] = useState("all")
-  const [editingListing, setEditingListing] = useState<any>(null)
   const [date, setDate] = useState<Date | undefined>(new Date())
-  const [events, setEvents] = useState(initialEvents)
+  const [events, setEvents] = useState<any[]>([])
   const [newEvent, setNewEvent] = useState({
     type: "call",
     clientName: "",
     phoneNumber: "",
     description: "",
     address: "",
-    date: new Date(), // This initializes with current date and time
+    date: new Date(),
     reminder: true,
     reminderType: "day",
     reminderTime: 1,
@@ -240,8 +144,6 @@ export default function EnhancedUserDashboard() {
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showSchedule, setShowSchedule] = useState(false)
-  const [showNewEventDialog, setShowNewEventDialog] = useState(false)
-  const [isEventDatePickerOpen, setIsEventDatePickerOpen] = useState(false)
   const [newListing, setNewListing] = useState({
     title: "",
     price: 0,
@@ -253,42 +155,91 @@ export default function EnhancedUserDashboard() {
     views: 0,
     inquiries: 0,
   })
-  const [messages, setMessages] = useState(initialMessages)
-  const [notifications, setNotifications] = useState(initialNotifications)
+  const [messages, setMessages] = useState<any[]>([])
+  const [notifications, setNotifications] = useState<any[]>([])
   const [selectedMessage, setSelectedMessage] = useState<any>(null)
   const [replyContent, setReplyContent] = useState("")
+  const [isLoading, setIsLoading] = useState(true)
+  const supabase = getBrowserClient()
 
   // Filter events for the selected date
   const selectedDateEvents = events.filter(
     (event) =>
       date &&
-      event.date.getDate() === date.getDate() &&
-      event.date.getMonth() === date.getMonth() &&
-      event.date.getFullYear() === date.getFullYear(),
+      event.event_date &&
+      new Date(event.event_date).getDate() === date.getDate() &&
+      new Date(event.event_date).getMonth() === date.getMonth() &&
+      new Date(event.event_date).getFullYear() === date.getFullYear(),
   )
 
   // Dates with events for highlighting in calendar
-  const datesWithEvents = events.map((event) => event.date)
+  const datesWithEvents = events.map((event) => new Date(event.event_date))
 
   // Count unread messages and notifications
-  const unreadMessagesCount = messages.filter((message) => !message.read).length
-  const unreadNotificationsCount = notifications.filter((notification) => !notification.read).length
+  const unreadMessagesCount = messages.filter((message) => !message.is_read).length
+  const unreadNotificationsCount = notifications.filter((notification) => !notification.is_read).length
 
-  const handleEdit = (listing: any) => {
-    setEditingListing(listing)
-  }
+  // Fetch data from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return
 
-  const handleSaveEdit = (updatedListing: any) => {
-    setListings(listings.map((listing) => (listing.id === updatedListing.id ? updatedListing : listing)))
-    setEditingListing(null)
-  }
+      setIsLoading(true)
+      try {
+        // Fetch events
+        const { data: eventsData, error: eventsError } = await supabase
+          .from("events")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("event_date", { ascending: true })
+
+        if (eventsError) {
+          console.error("Error fetching events:", eventsError)
+        } else {
+          setEvents(eventsData || [])
+        }
+
+        // Fetch messages
+        const { data: messagesData, error: messagesError } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("recipient_id", user.id)
+          .order("created_at", { ascending: false })
+
+        if (messagesError) {
+          console.error("Error fetching messages:", messagesError)
+        } else {
+          setMessages(messagesData || [])
+        }
+
+        // Fetch notifications
+        const { data: notificationsData, error: notificationsError } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+
+        if (notificationsError) {
+          console.error("Error fetching notifications:", notificationsError)
+        } else {
+          setNotifications(notificationsData || [])
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [user])
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setEditingListing({ ...editingListing, image: reader.result as string })
+        // Handle image upload
       }
       reader.readAsDataURL(file)
     }
@@ -297,69 +248,110 @@ export default function EnhancedUserDashboard() {
   const triggerFileInput = () => {
     fileInputRef.current?.click()
   }
-  const handleAddEvent = () => {
-    const newId = events.length > 0 ? Math.max(...events.map((e) => e.id)) + 1 : 1;
-    
-    // Construct the event object based on its type
-    const eventToAdd: {
-      id: number;
-      type: "call" | "meeting";
-      clientName: string;
-      phoneNumber: string;
-      date: Date;
-      reminder: boolean;
-      description?: string;
-      address?: string;
-    } = {
-      id: newId,
-      type: newEvent.type as "call" | "meeting",
-      clientName: newEvent.clientName,
-      phoneNumber: newEvent.phoneNumber,
-      date: newEvent.date,
-      reminder: newEvent.reminder,
-    };
 
-    if (newEvent.type === "call") {
-      eventToAdd.description = newEvent.description;
-    } else if (newEvent.type === "meeting") {
-      eventToAdd.address = newEvent.address;
-    }
+  const handleAddEvent = async () => {
+    if (!user) return
 
-    setEvents([...events, eventToAdd]);
+    try {
+      // Calculate reminder date based on settings
+      let reminderDate = null
+      if (newEvent.reminder) {
+        reminderDate = new Date(newEvent.date)
 
-    let reminderText = ""
-    if (newEvent.reminder) {
-      reminderText = `Reminder set for ${newEvent.reminderTime} ${newEvent.reminderType}${newEvent.reminderTime > 1 ? "s" : ""} before`
-      if (newEvent.sendEmail) {
-        reminderText += " with email notification"
+        if (newEvent.reminderType === "minute") {
+          reminderDate = addMinutes(reminderDate, -newEvent.reminderTime)
+        } else if (newEvent.reminderType === "hour") {
+          reminderDate = addHours(reminderDate, -newEvent.reminderTime)
+        } else if (newEvent.reminderType === "day") {
+          reminderDate = addDays(reminderDate, -newEvent.reminderTime)
+        }
       }
+
+      // Insert event into database
+      const { data, error } = await supabase
+        .from("events")
+        .insert([
+          {
+            user_id: user.id,
+            event_type: newEvent.type,
+            client_name: newEvent.clientName,
+            phone_number: newEvent.phoneNumber,
+            description: newEvent.description,
+            address: newEvent.address,
+            event_date: newEvent.date.toISOString(),
+            has_reminder: newEvent.reminder,
+            reminder_time: newEvent.reminderTime,
+            reminder_type: newEvent.reminderType,
+            send_email: newEvent.sendEmail,
+          },
+        ])
+        .select()
+
+      if (error) {
+        throw error
+      }
+
+      // Add the new event to the state
+      setEvents([...events, data[0]])
+
+      let reminderText = ""
+      if (newEvent.reminder) {
+        reminderText = `Reminder set for ${newEvent.reminderTime} ${newEvent.reminderType}${newEvent.reminderTime > 1 ? "s" : ""} before`
+        if (newEvent.sendEmail) {
+          reminderText += " with email notification"
+        }
+      }
+
+      toast({
+        title: "Event scheduled",
+        description: `${newEvent.type === "call" ? "Call" : "Meeting"} with ${newEvent.clientName} on ${format(newEvent.date, "PPP")} at ${format(newEvent.date, "p")}. ${reminderText}`,
+      })
+
+      // Reset form
+      setNewEvent({
+        type: "call",
+        clientName: "",
+        phoneNumber: "",
+        description: "",
+        address: "",
+        date: new Date(),
+        reminder: true,
+        reminderType: "day",
+        reminderTime: 1,
+        sendEmail: true,
+      })
+    } catch (error) {
+      console.error("Error adding event:", error)
+      toast({
+        title: "Error",
+        description: "There was an error scheduling the event",
+        variant: "destructive",
+      })
     }
-
-    toast({
-      title: "Event scheduled",
-      description: `${newEvent.type === "call" ? "Call" : "Meeting"} with ${newEvent.clientName} on ${format(newEvent.date, "PPP")} at ${format(newEvent.date, "p")}. ${reminderText}`,
-    })
-    
-    // Close the dialog after scheduling the event
-    setShowNewEventDialog(false)
   }
 
-  const handleDeleteEvent = (id: number) => {
-    setEvents(events.filter((event) => event.id !== id))
-    toast({
-      title: "Event deleted",
-      description: "The event has been removed from your calendar",
-    })
-  }
+  const handleDeleteEvent = async (id: string) => {
+    try {
+      const { error } = await supabase.from("events").delete().eq("id", id)
 
-  const handleAddListing = () => {
-    const newId = listings.length > 0 ? Math.max(...listings.map((l) => l.id)) + 1 : 1
-    const newListingWithId = { ...newListing, id: newId }
-    setListings([...listings, newListingWithId])
-    toast({
-      title: "Listing added",
-      description: `${newListing.title} has been added to your listings`,
-    })
+      if (error) {
+        throw error
+      }
+
+      setEvents(events.filter((event) => event.id !== id))
+
+      toast({
+        title: "Event deleted",
+        description: "The event has been removed from your calendar",
+      })
+    } catch (error) {
+      console.error("Error deleting event:", error)
+      toast({
+        title: "Error",
+        description: "There was an error deleting the event",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleRemoveListing = (id: number) => {
@@ -370,11 +362,21 @@ export default function EnhancedUserDashboard() {
     })
   }
 
-  const handleReadMessage = (id: number) => {
-    setMessages(messages.map((message) => (message.id === id ? { ...message, read: true } : message)))
-    const message = messages.find((m) => m.id === id)
-    if (message) {
-      setSelectedMessage(message)
+  const handleReadMessage = async (id: string) => {
+    try {
+      const { error } = await supabase.from("messages").update({ is_read: true }).eq("id", id)
+
+      if (error) {
+        throw error
+      }
+
+      setMessages(messages.map((message) => (message.id === id ? { ...message, is_read: true } : message)))
+      const message = messages.find((m) => m.id === id)
+      if (message) {
+        setSelectedMessage(message)
+      }
+    } catch (error) {
+      console.error("Error marking message as read:", error)
     }
   }
 
@@ -383,75 +385,94 @@ export default function EnhancedUserDashboard() {
 
     toast({
       title: "Reply sent",
-      description: `Your reply to ${selectedMessage.sender} has been sent`,
+      description: `Your reply has been sent`,
     })
 
     setReplyContent("")
   }
 
-  const handleMarkAllMessagesRead = () => {
-    setMessages(messages.map((message) => ({ ...message, read: true })))
-    toast({
-      title: "All messages marked as read",
-      description: "Your inbox is now clear",
-    })
-  }
+  const handleMarkAllMessagesRead = async () => {
+    try {
+      const { error } = await supabase
+        .from("messages")
+        .update({ is_read: true })
+        .eq("recipient_id", user?.id)
+        .eq("is_read", false)
 
-  const handleReadNotification = (id: number) => {
-    setNotifications(
-      notifications.map((notification) => (notification.id === id ? { ...notification, read: true } : notification)),
-    )
-  }
+      if (error) {
+        throw error
+      }
 
-  const handleMarkAllNotificationsRead = () => {
-    setNotifications(notifications.map((notification) => ({ ...notification, read: true })))
-    toast({
-      title: "All notifications marked as read",
-      description: "Your notifications are now clear",
-    })
-  }
+      setMessages(messages.map((message) => ({ ...message, is_read: true })))
 
-  const handleClearAllNotifications = () => {
-    setNotifications([])
-    toast({
-      title: "All notifications cleared",
-      description: "Your notification list is now empty",
-    })
-  }
-
-  // Simulate notification reminders
-  useEffect(() => {
-    const checkReminders = () => {
-      const now = new Date()
-      events.forEach((event) => {
-        if (event.reminder) {
-          const eventTime = new Date(event.date)
-          const reminderTime = new Date(eventTime)
-
-          // For meetings, set reminder 1 hour before
-          if (event.type === "meeting") {
-            reminderTime.setHours(reminderTime.getHours() - 1)
-          }
-
-          // Check if it's time for the reminder (within the last minute)
-          const diffMs = reminderTime.getTime() - now.getTime()
-          if (diffMs > 0 && diffMs < 60000) {
-            toast({
-              title: `Upcoming ${event.type}`,
-              description: `${event.type === "call" ? "Call" : "Meeting"} with ${event.clientName} ${event.type === "meeting" ? "in 1 hour" : "soon"}`,
-            })
-          }
-        }
+      toast({
+        title: "All messages marked as read",
+        description: "Your inbox is now clear",
       })
+    } catch (error) {
+      console.error("Error marking all messages as read:", error)
     }
+  }
 
-    const interval = setInterval(checkReminders, 60000) // Check every minute
-    return () => clearInterval(interval)
-  }, [events])
+  const handleReadNotification = async (id: string) => {
+    try {
+      const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id)
 
-  const filteredListings = listings.filter(
-    (listing) => selectedPropertyType === "all" || listing.propertyType === selectedPropertyType,
-  )
+      if (error) {
+        throw error
+      }
+
+      setNotifications(
+        notifications.map((notification) =>
+          notification.id === id ? { ...notification, is_read: true } : notification,
+        ),
+      )
+    } catch (error) {
+      console.error("Error marking notification as read:", error)
+    }
+  }
+
+  const handleMarkAllNotificationsRead = async () => {
+    try {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("user_id", user?.id)
+        .eq("is_read", false)
+
+      if (error) {
+        throw error
+      }
+
+      setNotifications(notifications.map((notification) => ({ ...notification, is_read: true })))
+
+      toast({
+        title: "All notifications marked as read",
+        description: "Your notifications are now clear",
+      })
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error)
+    }
+  }
+
+  const handleClearAllNotifications = async () => {
+    try {
+      const { error } = await supabase.from("notifications").delete().eq("user_id", user?.id)
+
+      if (error) {
+        throw error
+      }
+
+      setNotifications([])
+
+      toast({
+        title: "All notifications cleared",
+        description: "Your notification list is now empty",
+      })
+    } catch (error) {
+      console.error("Error clearing notifications:", error)
+    }
+  }
 
   // Function to render notification icon based on type
   const getNotificationIcon = (type: string) => {
@@ -471,17 +492,25 @@ export default function EnhancedUserDashboard() {
     }
   }
 
+  const filteredListings = listings.filter(
+    (listing) => selectedPropertyType === "all" || listing.propertyType === selectedPropertyType,
+  )
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-64">Loading...</div>
+  }
+
   return (
     <div className="space-y-8">
       <Toaster />
 
       <Tabs defaultValue="dashboard">
         <TabsList className="mb-4">
-          <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-          <TabsTrigger value="listings">My Listings</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
+          <TabsTrigger value="dashboard">{t("dashboard")}</TabsTrigger>
+          <TabsTrigger value="listings">{t("listings")}</TabsTrigger>
+          <TabsTrigger value="calendar">{t("calendar")}</TabsTrigger>
           <TabsTrigger value="notifications" className="relative">
-            Notifications
+            {t("notifications")}
             {unreadNotificationsCount > 0 && (
               <Badge
                 variant="destructive"
@@ -607,7 +636,7 @@ export default function EnhancedUserDashboard() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <div>
-                  <CardTitle>My Listings</CardTitle>
+                  <CardTitle>{t("listings")}</CardTitle>
                   <CardDescription>Manage your property listings</CardDescription>
                 </div>
                 <Button asChild>
@@ -663,7 +692,8 @@ export default function EnhancedUserDashboard() {
                               <div className="p-4">
                                 <h3 className="font-semibold">{listing.title}</h3>
                                 <p className="text-sm text-muted-foreground">
-                                  ${listing.price.toLocaleString()}
+                                  {t("euro")}
+                                  {listing.price.toLocaleString()}
                                   {listing.category === "rent" ? "/month" : ""}
                                 </p>
                                 <p className="text-sm text-muted-foreground capitalize">{listing.propertyType}</p>
@@ -714,7 +744,13 @@ export default function EnhancedUserDashboard() {
                   <Calendar
                     mode="single"
                     selected={date}
-                    onSelect={(selectedDate) => setDate(selectedDate)}
+                    onSelect={(newDate) => {
+                      setDate(newDate)
+                      // Open schedule dialog automatically when a date is selected
+                      if (newDate && selectedDateEvents.length > 0) {
+                        setShowSchedule(true)
+                      }
+                    }}
                     className="rounded-md border"
                     style={calendarStyles}
                     modifiers={{
@@ -730,9 +766,11 @@ export default function EnhancedUserDashboard() {
                       hasEvent: "bg-primary/20",
                     }}
                   />
-                </div>                <Dialog open={showNewEventDialog} onOpenChange={setShowNewEventDialog}>
+                </div>
+
+                <Dialog>
                   <DialogTrigger asChild>
-                    <Button className="w-full mt-6" onClick={() => setShowNewEventDialog(true)}>
+                    <Button className="w-full mt-6">
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       Schedule New Event
                     </Button>
@@ -817,7 +855,7 @@ export default function EnhancedUserDashboard() {
                           Date & Time
                         </Label>
                         <div className="col-span-3">
-                          <Popover open={isEventDatePickerOpen} onOpenChange={setIsEventDatePickerOpen}>
+                          <Popover>
                             <PopoverTrigger asChild>
                               <Button
                                 variant={"outline"}
@@ -825,7 +863,6 @@ export default function EnhancedUserDashboard() {
                                   "w-full justify-start text-left font-normal",
                                   !newEvent.date && "text-muted-foreground",
                                 )}
-                                onClick={() => setIsEventDatePickerOpen(true)} 
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {newEvent.date ? format(newEvent.date, "PPP") : <span>Pick a date</span>}
@@ -835,20 +872,7 @@ export default function EnhancedUserDashboard() {
                               <Calendar
                                 mode="single"
                                 selected={newEvent.date}
-                                onSelect={(selectedCalDate: Date | undefined) => {
-                                  if (selectedCalDate) {
-                                    const currentTime = new Date(newEvent.date); // Get current time from newEvent.date
-                                    const newFullDate = new Date(selectedCalDate); // This is the new date, defaults to midnight
-                                    
-                                    newFullDate.setHours(currentTime.getHours());
-                                    newFullDate.setMinutes(currentTime.getMinutes());
-                                    newFullDate.setSeconds(currentTime.getSeconds());
-                                    newFullDate.setMilliseconds(currentTime.getMilliseconds());
-
-                                    setNewEvent(prevEvent => ({ ...prevEvent, date: newFullDate }));
-                                  }
-                                  setIsEventDatePickerOpen(false); 
-                                }}
+                                onSelect={(date) => date && setNewEvent({ ...newEvent, date })}
                                 initialFocus
                               />
                             </PopoverContent>
@@ -976,18 +1000,18 @@ export default function EnhancedUserDashboard() {
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between">
                                   <div className="flex items-center">
-                                    {event.type === "call" ? (
+                                    {event.event_type === "call" ? (
                                       <Phone className="h-10 w-10 text-primary p-2 bg-primary/10 rounded-full mr-3" />
                                     ) : (
                                       <MapPin className="h-10 w-10 text-primary p-2 bg-primary/10 rounded-full mr-3" />
                                     )}
                                     <div>
                                       <h3 className="font-medium">
-                                        {event.type === "call" ? "Call" : "Meeting"} with {event.clientName}
+                                        {event.event_type === "call" ? "Call" : "Meeting"} with {event.client_name}
                                       </h3>
                                       <p className="text-sm text-muted-foreground flex items-center">
                                         <Clock className="h-3 w-3 mr-1" />
-                                        {format(event.date, "h:mm a")}
+                                        {format(new Date(event.event_date), "h:mm a")}
                                       </p>
                                     </div>
                                   </div>
@@ -1004,13 +1028,13 @@ export default function EnhancedUserDashboard() {
                                 <div className="mt-3 pl-12 space-y-1">
                                   <p className="text-sm flex items-center">
                                     <User className="h-3 w-3 mr-1" />
-                                    {event.clientName}
+                                    {event.client_name}
                                   </p>
                                   <p className="text-sm flex items-center">
                                     <Phone className="h-3 w-3 mr-1" />
-                                    {event.phoneNumber}
+                                    {event.phone_number}
                                   </p>
-                                  {event.type === "call" ? (
+                                  {event.event_type === "call" ? (
                                     <p className="text-sm">
                                       <span className="text-muted-foreground">Description: </span>
                                       {event.description}
@@ -1021,10 +1045,12 @@ export default function EnhancedUserDashboard() {
                                       {event.address}
                                     </p>
                                   )}
-                                  {event.reminder && (
+                                  {event.has_reminder && (
                                     <p className="text-xs flex items-center text-muted-foreground">
                                       <Bell className="h-3 w-3 mr-1" />
-                                      {event.type === "meeting" ? "Reminder 1 hour before" : "Reminder enabled"}
+                                      Reminder {event.reminder_time} {event.reminder_type}
+                                      {event.reminder_time > 1 ? "s" : ""} before
+                                      {event.send_email ? " with email" : ""}
                                     </p>
                                   )}
                                 </div>
@@ -1051,18 +1077,18 @@ export default function EnhancedUserDashboard() {
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between">
                             <div className="flex items-center">
-                              {event.type === "call" ? (
+                              {event.event_type === "call" ? (
                                 <Phone className="h-10 w-10 text-primary p-2 bg-primary/10 rounded-full mr-3" />
                               ) : (
                                 <MapPin className="h-10 w-10 text-primary p-2 bg-primary/10 rounded-full mr-3" />
                               )}
                               <div>
                                 <h3 className="font-medium">
-                                  {event.type === "call" ? "Call" : "Meeting"} with {event.clientName}
+                                  {event.event_type === "call" ? "Call" : "Meeting"} with {event.client_name}
                                 </h3>
                                 <p className="text-sm text-muted-foreground flex items-center">
                                   <Clock className="h-3 w-3 mr-1" />
-                                  {format(event.date, "h:mm a")}
+                                  {format(new Date(event.event_date), "h:mm a")}
                                 </p>
                               </div>
                             </div>
@@ -1079,13 +1105,13 @@ export default function EnhancedUserDashboard() {
                           <div className="mt-3 pl-12 space-y-1">
                             <p className="text-sm flex items-center">
                               <User className="h-3 w-3 mr-1" />
-                              {event.clientName}
+                              {event.client_name}
                             </p>
                             <p className="text-sm flex items-center">
                               <Phone className="h-3 w-3 mr-1" />
-                              {event.phoneNumber}
+                              {event.phone_number}
                             </p>
-                            {event.type === "call" ? (
+                            {event.event_type === "call" ? (
                               <p className="text-sm">
                                 <span className="text-muted-foreground">Description: </span>
                                 {event.description}
@@ -1096,10 +1122,12 @@ export default function EnhancedUserDashboard() {
                                 {event.address}
                               </p>
                             )}
-                            {event.reminder && (
+                            {event.has_reminder && (
                               <p className="text-xs flex items-center text-muted-foreground">
                                 <Bell className="h-3 w-3 mr-1" />
-                                {event.type === "meeting" ? "Reminder 1 hour before" : "Reminder enabled"}
+                                Reminder {event.reminder_time} {event.reminder_type}
+                                {event.reminder_time > 1 ? "s" : ""} before
+                                {event.send_email ? " with email" : ""}
                               </p>
                             )}
                           </div>
@@ -1145,23 +1173,25 @@ export default function EnhancedUserDashboard() {
                       key={notification.id}
                       className={cn(
                         "flex items-start p-4 rounded-lg transition-colors",
-                        notification.read ? "bg-secondary/20" : "bg-secondary/40",
+                        notification.is_read ? "bg-secondary/20" : "bg-secondary/40",
                       )}
                       onClick={() => handleReadNotification(notification.id)}
                     >
                       <div className="mr-3 mt-0.5">{getNotificationIcon(notification.type)}</div>
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
-                          <h4 className={cn("font-medium", !notification.read && "font-semibold")}>
+                          <h4 className={cn("font-medium", !notification.is_read && "font-semibold")}>
                             {notification.title}
                           </h4>
                           <span className="text-xs text-muted-foreground ml-2">
-                            {format(notification.date, "MMM d, h:mm a")}
+                            {format(new Date(notification.created_at), "MMM d, h:mm a")}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">{notification.description}</p>
                       </div>
-                      {!notification.read && <div className="ml-2 h-2 w-2 rounded-full bg-primary flex-shrink-0"></div>}
+                      {!notification.is_read && (
+                        <div className="ml-2 h-2 w-2 rounded-full bg-primary flex-shrink-0"></div>
+                      )}
                     </div>
                   ))
                 )}
@@ -1173,4 +1203,3 @@ export default function EnhancedUserDashboard() {
     </div>
   )
 }
-

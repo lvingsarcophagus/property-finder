@@ -1,686 +1,322 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import React from "react"
-import {
-  ArrowLeft,
-  MapPin,
-  Thermometer,
-  Ruler,
-  BedDouble,
-  Plus,
-  FileText,
-  User,
-  Phone,
-  MessageSquare,
-  Pencil,
-} from "lucide-react"
+import { ArrowLeft, MapPin, Bed, Bath, Square, Calendar, Phone, Mail, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { useTranslation } from "../../context/TranslationContext"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toast } from "@/components/ui/use-toast"
-import { Toaster } from "@/components/ui/toaster"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import { useAuth } from "../../context/AuthContext"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 
-// This would typically come from an API or database
-const properties = [
-  {
-    id: "1",
-    title: "Modern Apartment in Downtown",
-    images: ["/images/studio1.jpg", "/images/studio2.jpg"],
-    price: 250000,
-    rentPrice: 1200,
-    currency: "EUR",
-    category: "sale",
-    city: "Vilnius",
-    cityPart: "City Center",
-    street: "Gedimino Avenue",
-    houseNumber: "15A",
-    heatingType: "Central",
-    floor: 3,
-    totalFloors: 5,
-    rooms: 3,
-    size: 75,
-    sizeUnit: "sqm",
+// Mock property data
+const mockProperty = {
+  id: "1",
+  title: "Modern Apartment in Downtown",
+  images: [
+    "/placeholder.svg?height=600&width=800",
+    "/placeholder.svg?height=600&width=800",
+    "/placeholder.svg?height=600&width=800",
+  ],
+  price: 250000,
+  rentPrice: 1200,
+  category: "sale",
+  city: "Vilnius",
+  cityPart: "City Center",
+  street: "Gedimino Avenue",
+  houseNumber: "15A",
+  heatingType: "Central",
+  floor: 3,
+  totalFloors: 5,
+  rooms: 3,
+  bedrooms: 2,
+  bathrooms: 1,
+  area: 75,
+  description:
+    "This beautiful modern apartment is located in the heart of the city. It features high ceilings, large windows that allow plenty of natural light, and a recently renovated kitchen with high-end appliances. The building has an elevator and secure parking. Perfect for professionals or small families looking for comfort and convenience in a central location.",
+  amenities: ["Elevator", "Parking", "Balcony", "Security System"],
+  yearBuilt: 2015,
+  buildingMaterial: "Brick",
+  propertyType: "apartment",
+  status: "available",
+  owner: {
+    name: "John Smith",
+    phone: "+370 612 34567",
+    email: "john@propertyfinder.com",
     description:
-      "This beautiful modern apartment is located in the heart of the city. It features high ceilings, large windows that allow plenty of natural light, and a recently renovated kitchen with high-end appliances. The building has an elevator and secure parking. Perfect for professionals or small families looking for comfort and convenience in a central location.",
-    amenities: ["Elevator", "Parking", "Balcony", "Security System"],
-    yearBuilt: 2015,
-    buildingMaterial: "Brick",
-    propertyType: "apartment",
-    status: "available",
-    ownerInvoice: true,
-    renterInvoice: true,
-    owner: {
-      name: "John Smith",
-      phone: "+370 612 34567",
-      email: "john@propertyfinder.com",
-      description:
-        "Experienced property owner with multiple listings in the city center area. Quick to respond and flexible with viewing times.",
-    },
+      "Experienced property owner with multiple listings in the city center area. Quick to respond and flexible with viewing times.",
+    rating: 4.8,
+    totalReviews: 24,
   },
-  {
-    id: "2",
-    title: "Spacious Family Home",
-    images: ["/images/studio2.jpg", "/images/studio3.jpg"],
-    price: 450000,
-    rentPrice: 2500,
-    currency: "EUR",
-    category: "sale",
-    city: "Kaunas",
-    cityPart: "Žaliakalnis",
-    street: "Savanorių Avenue",
-    houseNumber: "42",
-    heatingType: "Gas",
-    floor: 1,
-    totalFloors: 2,
-    rooms: 5,
-    size: 180,
-    sizeUnit: "sqm",
-    description:
-      "A spacious family home in a quiet neighborhood with excellent schools nearby. The property features a large garden, a double garage, and a newly renovated kitchen. The living room has a fireplace, perfect for cozy family gatherings. The master bedroom has an en-suite bathroom and a walk-in closet. The basement is fully finished and can be used as a home office or entertainment area.",
-    amenities: ["Garden", "Garage", "Fireplace", "Basement"],
-    yearBuilt: 2008,
-    buildingMaterial: "Wood and Brick",
-    propertyType: "house",
-    status: "available",
-    ownerInvoice: true,
-    renterInvoice: false,
-    owner: {
-      name: "Sarah Johnson",
-      phone: "+370 698 76543",
-      email: "sarah@propertyfinder.com",
-      description:
-        "Local homeowner with deep knowledge of the neighborhood. Maintains properties to a high standard and is always available for questions.",
-    },
-  },
-  {
-    id: "3",
-    title: "Luxury Condo with Ocean View",
-    images: ["/images/studio3.jpg", "/images/studio4.jpg"],
-    price: 750000,
-    rentPrice: 3500,
-    currency: "EUR",
-    category: "sale",
-    city: "Klaipėda",
-    cityPart: "Old Town",
-    street: "Danės Street",
-    houseNumber: "7",
-    heatingType: "Underfloor",
-    floor: 6,
-    totalFloors: 6,
-    rooms: 4,
-    size: 120,
-    sizeUnit: "sqm",
-    description:
-      "Exclusive penthouse apartment with panoramic views of the Baltic Sea. This luxury condo features high-end finishes throughout, including marble countertops, hardwood floors, and designer fixtures. The open-concept living area is perfect for entertaining, with floor-to-ceiling windows that showcase the stunning sea views. The building offers 24/7 security, a fitness center, and a rooftop terrace.",
-    amenities: ["Sea View", "Terrace", "Gym", "24/7 Security"],
-    yearBuilt: 2020,
-    buildingMaterial: "Concrete",
-    propertyType: "apartment",
-    status: "available",
-    ownerInvoice: true,
-    renterInvoice: true,
-    owner: {
-      name: "Michael Brown",
-      phone: "+370 655 12345",
-      email: "michael@propertyfinder.com",
-      description:
-        "Professional real estate investor with a portfolio of luxury properties. Provides premium service to all tenants and buyers.",
-    },
-  },
-]
-
-interface PropertyDetailsPageProps {
-  params: { id: string }
 }
 
-export default function PropertyDetailsPage({ params }: PropertyDetailsPageProps) {
-  const { t } = useTranslation()
-  const { isAuthenticated } = useAuth()
+export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0)
-  const [isEditing, setIsEditing] = useState(false)
-  const [propertyData, setPropertyData] = useState<any>(null)
-  const [addressInfo, setAddressInfo] = useState({
-    city: "",
-    cityPart: "",
-    street: "",
-    houseNumber: "",
-  })
-  const [showAddressInfo, setShowAddressInfo] = useState(false)
-  const [listingType, setListingType] = useState<"sell" | "rent">("sell")
+  const [property, setProperty] = useState(mockProperty)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const property = properties.find((p) => p.id === params.id) || properties[0]
-    setPropertyData(property)
-    setAddressInfo({
-      city: property.city,
-      cityPart: property.cityPart,
-      street: property.street,
-      houseNumber: property.houseNumber,
-    })
+    // Simulate loading
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
   }, [params.id])
 
-  if (!propertyData) {
-    return <div>Loading...</div>
-  }
-
-  const handleAddressLookup = () => {
-    setTimeout(() => {
-      setShowAddressInfo(true)
-      toast({
-        title: "Address information found",
-        description: "Building details have been automatically filled",
-      })
-    }, 1000)
-  }
-
-  const handleImageChange = (index: number) => {
-    setActiveImageIndex(index)
-  }
-
-  const handlePropertyTypeChange = (value: "sell" | "rent") => {
-    setListingType(value)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-6 py-12">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-6"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-lg mb-4"></div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              </div>
+              <div className="space-y-4">
+                <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="container mx-auto px-6 py-12">
-      <Toaster />
-      <div className="mb-6">
-        <Link href="/listings" className="flex items-center text-primary hover:underline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t("backToListings")}
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <div className="relative h-[400px] mb-4 rounded-lg overflow-hidden">
-            <Image
-              src={propertyData.images[activeImageIndex] || "/placeholder.svg"}
-              alt={propertyData.title}
-              fill
-              style={{ objectFit: 'cover' }}
-              className="rounded-lg"
-            />
-            <Badge className="absolute top-4 right-4 text-sm px-3 py-1">
-              {propertyData.category === "sale" ? t("forSale") : t("forRent")}
-            </Badge>
-          </div>
-
-          <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
-            {propertyData.images.map((image: string, index: number) => (
-              <div
-                key={index}
-                className={`relative h-20 w-20 flex-shrink-0 cursor-pointer rounded-md overflow-hidden border-2 ${activeImageIndex === index ? "border-primary" : "border-transparent"}`}
-                onClick={() => handleImageChange(index)}
-              >
-                <Image
-                  src={image || "/placeholder.svg"}
-                  alt={`Thumbnail ${index + 1}`}
-                  fill
-                  style={{ objectFit: 'cover' }}
-                />
-              </div>
-            ))}
-            {isAuthenticated && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <div className="h-20 w-20 flex-shrink-0 cursor-pointer rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center">
-                    <Plus className="h-6 w-6 text-gray-400" />
-                  </div>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Upload Photos</DialogTitle>
-                    <DialogDescription>Add new photos to this property listing</DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <Label htmlFor="photos">Select Photos</Label>
-                    <Input id="photos" type="file" multiple accept="image/*" />
-                    <p className="text-sm text-muted-foreground">
-                      You can upload multiple photos at once. Maximum 10 photos allowed.
-                    </p>
-                  </div>
-                  <DialogFooter>
-                    <Button type="submit">Upload</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-
-          <h1 className="text-3xl font-bold mb-2">{propertyData.title}</h1>
-          <div className="flex items-center text-xl font-semibold text-primary mb-6">
-            {listingType === "sell" ? (
-              <>€{propertyData.price.toLocaleString()}</>
-            ) : (
-              <>€{propertyData.rentPrice.toLocaleString()}/month</>
-            )}
-            {isAuthenticated && (
-              <div className="ml-4">
-                <RadioGroup
-                  defaultValue={listingType}
-                  onValueChange={(value) => handlePropertyTypeChange(value as "sell" | "rent")}
-                  className="flex space-x-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="sell" id="sell" />
-                    <Label htmlFor="sell">For Sale</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="rent" id="rent" />
-                    <Label htmlFor="rent">For Rent</Label>
-                  </div>
-                </RadioGroup>
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="flex items-center p-4">
-                <MapPin className="h-5 w-5 text-primary mr-2" />
-                <div>
-                  <p className="text-sm text-muted-foreground">{t("location")}</p>
-                  <p className="font-medium">{propertyData.city}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center p-4">
-                <BedDouble className="h-5 w-5 text-primary mr-2" />
-                <div>
-                  <p className="text-sm text-muted-foreground">{t("rooms")}</p>
-                  <p className="font-medium">{propertyData.rooms}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center p-4">
-                <Ruler className="h-5 w-5 text-primary mr-2" />
-                <div>
-                  <p className="text-sm text-muted-foreground">{t("area")}</p>
-                  <p className="font-medium">{propertyData.size} m²</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="flex items-center p-4">
-                <Thermometer className="h-5 w-5 text-primary mr-2" />
-                <div>
-                  <p className="text-sm text-muted-foreground">{t("heating")}</p>
-                  <p className="font-medium">{propertyData.heatingType}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Tabs defaultValue="details" className="mb-8">
-            <TabsList>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="amenities">Amenities</TabsTrigger>
-              <TabsTrigger value="owner">Owner Info</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="details">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-4">Property Details</h2>
-
-                  {isAuthenticated && (
-                    <div className="mb-6 p-4 bg-muted rounded-lg">
-                      <h3 className="text-md font-medium mb-2">Address Lookup</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <Label htmlFor="city">City</Label>
-                          <Input
-                            id="city"
-                            value={addressInfo.city}
-                            onChange={(e) => setAddressInfo({ ...addressInfo, city: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="cityPart">City Part</Label>
-                          <Input
-                            id="cityPart"
-                            value={addressInfo.cityPart}
-                            onChange={(e) => setAddressInfo({ ...addressInfo, cityPart: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="street">Street</Label>
-                          <Input
-                            id="street"
-                            value={addressInfo.street}
-                            onChange={(e) => setAddressInfo({ ...addressInfo, street: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="houseNumber">House/Flat Number</Label>
-                          <Input
-                            id="houseNumber"
-                            value={addressInfo.houseNumber}
-                            onChange={(e) => setAddressInfo({ ...addressInfo, houseNumber: e.target.value })}
-                          />
-                        </div>
-                      </div>
-                      <Button onClick={handleAddressLookup}>Lookup Address Info</Button>
-
-                      {showAddressInfo && (
-                        <div className="mt-4 p-4 bg-background rounded-lg border">
-                          <h4 className="text-sm font-medium mb-2">Building Information</h4>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                              <Label htmlFor="yearBuilt">Year Built</Label>
-                              <Input id="yearBuilt" defaultValue={propertyData.yearBuilt} />
-                            </div>
-                            <div>
-                              <Label htmlFor="totalFloors">Total Floors</Label>
-                              <Input id="totalFloors" defaultValue={propertyData.totalFloors} />
-                            </div>
-                            <div>
-                              <Label htmlFor="buildingMaterial">Building Material</Label>
-                              <Input id="buildingMaterial" defaultValue={propertyData.buildingMaterial} />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-md font-medium mb-3">Location</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">City:</span>
-                          <span>{propertyData.city}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">City Part:</span>
-                          <span>{propertyData.cityPart}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Street:</span>
-                          <span>{propertyData.street}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">House/Flat Number:</span>
-                          <span>{propertyData.houseNumber}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="text-md font-medium mb-3">Property Information</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Property Type:</span>
-                          <span className="capitalize">{propertyData.propertyType}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Year Built:</span>
-                          <span>{propertyData.yearBuilt}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Building Material:</span>
-                          <span>{propertyData.buildingMaterial}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Floor:</span>
-                          <span>
-                            {propertyData.floor} of {propertyData.totalFloors}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {isAuthenticated && (
-                      <div className="md:col-span-2">
-                        <h3 className="text-md font-medium mb-3">Property Specifications</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <Label htmlFor="heatingType">Heating Type</Label>
-                            <Input id="heatingType" defaultValue={propertyData.heatingType} />
-                          </div>
-                          <div>
-                            <Label htmlFor="floor">Floor</Label>
-                            <Input id="floor" type="number" defaultValue={propertyData.floor} />
-                          </div>
-                          <div>
-                            <Label htmlFor="rooms">Room Number</Label>
-                            <Input id="rooms" type="number" defaultValue={propertyData.rooms} />
-                          </div>
-                          <div>                          <Label htmlFor="size">Area (m²)</Label>
-                          <Input id="size" type="number" defaultValue={propertyData.size} />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {isAuthenticated && (
-                      <div className="md:col-span-2">
-                        <h3 className="text-md font-medium mb-3">Invoice Information</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id="ownerInvoice"
-                              defaultChecked={propertyData.ownerInvoice}
-                              className="h-4 w-4 rounded border-gray-300"
-                            />
-                            <Label htmlFor="ownerInvoice">Invoice from owner</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id="renterInvoice"
-                              defaultChecked={propertyData.renterInvoice}
-                              className="h-4 w-4 rounded border-gray-300"
-                            />
-                            <Label htmlFor="renterInvoice">Invoice from renters</Label>
-                          </div>
-                          <div className="md:col-span-2">
-                            <Label htmlFor="price">Price (for {listingType === "sell" ? "sale" : "rent"})</Label>
-                            <Input
-                              id="price"
-                              type="number"
-                              defaultValue={listingType === "sell" ? propertyData.price : propertyData.rentPrice}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="description">
-              <Card>
-                <CardContent className="p-6">
-                  {isAuthenticated ? (
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-xl font-semibold">Description</h2>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/property/${params.id}/edit`}>
-                          <Pencil className="h-4 w-4 mr-2" />
-                          Edit Property
-                        </Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <h2 className="text-xl font-semibold mb-4">Description</h2>
-                  )}
-                  <p className="text-muted-foreground whitespace-pre-line">{propertyData.description}</p>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="amenities">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-4">Amenities</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {propertyData.amenities.map((amenity: string) => (
-                      <div key={amenity} className="flex items-center">
-                        <div className="h-2 w-2 rounded-full bg-primary mr-2"></div>
-                        <span>{amenity}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {isAuthenticated && (
-                    <div className="mt-6">
-                      <Label htmlFor="newAmenity">Add Amenity</Label>
-                      <div className="flex mt-2">
-                        <Input id="newAmenity" placeholder="Enter amenity" className="mr-2" />
-                        <Button>Add</Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="owner">
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-4">Owner Information</h2>
-
-                  {isAuthenticated ? (
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="ownerName">Name</Label>
-                        <Input id="ownerName" defaultValue={propertyData.owner.name} />
-                      </div>
-                      <div>
-                        <Label htmlFor="ownerPhone">Phone Number</Label>
-                        <Input id="ownerPhone" defaultValue={propertyData.owner.phone} />
-                      </div>
-                      <div>
-                        <Label htmlFor="ownerEmail">Email</Label>
-                        <Input id="ownerEmail" defaultValue={propertyData.owner.email} />
-                      </div>
-                      <div>
-                        <Label htmlFor="ownerDescription">Description</Label>
-                        <Textarea
-                          id="ownerDescription"
-                          defaultValue={propertyData.owner.description}
-                          className="min-h-[100px]"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-start">
-                        <User className="h-5 w-5 text-primary mr-3 mt-0.5" />
-                        <div>
-                          <p className="font-medium">{propertyData.owner.name}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <Phone className="h-5 w-5 text-primary mr-3 mt-0.5" />
-                        <div>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <FileText className="h-5 w-5 text-primary mr-3 mt-0.5" />
-                        <div>
-                          <p className="text-muted-foreground">{propertyData.owner.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="container mx-auto px-6 py-12">
+        {/* Back Navigation */}
+        <div className="mb-6">
+          <Link href="/listings" className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Listings
+          </Link>
         </div>
 
-        <div>
-          <Card className="sticky top-24">
-            <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">{t("propertyDetails")}</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Content */}
+          <div className="lg:col-span-2">
+            {/* Image Gallery */}
+            <div className="relative h-96 mb-6 rounded-xl overflow-hidden shadow-xl">
+              <Image
+                src={property.images[activeImageIndex] || "/placeholder.svg"}
+                alt={property.title}
+                fill
+                className="object-cover"
+              />
+              <Badge className="absolute top-4 right-4 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
+                {property.category === "sale" ? "For Sale" : "For Rent"}
+              </Badge>
+            </div>
 
-              <div className="space-y-4">
+            {/* Thumbnail Gallery */}
+            <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
+              {property.images.map((image, index) => (
+                <button
+                  key={index}
+                  className={`relative h-20 w-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
+                    activeImageIndex === index 
+                      ? "border-blue-500 shadow-md ring-2 ring-blue-200 dark:ring-blue-700" 
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                  }`}
+                  onClick={() => setActiveImageIndex(index)}
+                >
+                  <Image
+                    src={image || "/placeholder.svg"}
+                    alt={`Thumbnail ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Property Details */}
+            <Card className="mb-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl text-gray-800 dark:text-gray-200">{property.title}</CardTitle>
+                <div className="flex items-center text-gray-600 dark:text-gray-400">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  <span>
+                    {property.street} {property.houseNumber}, {property.cityPart}, {property.city}
+                  </span>
+                </div>
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                  €
+                  {property.category === "sale"
+                    ? property.price.toLocaleString()
+                    : `${property.rentPrice.toLocaleString()}/month`}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Property Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                  <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/50 dark:to-blue-800/50 rounded-xl">
+                    <Bed className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <div>
+                      <div className="font-semibold text-gray-800 dark:text-gray-200">{property.bedrooms}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Bedrooms</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/50 dark:to-green-800/50 rounded-xl">
+                    <Bath className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <div>
+                      <div className="font-semibold text-gray-800 dark:text-gray-200">{property.bathrooms}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Bathrooms</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/50 dark:to-purple-800/50 rounded-xl">
+                    <Square className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                    <div>
+                      <div className="font-semibold text-gray-800 dark:text-gray-200">{property.area}m²</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Area</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/50 dark:to-orange-800/50 rounded-xl">
+                    <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                    <div>
+                      <div className="font-semibold text-gray-800 dark:text-gray-200">{property.yearBuilt}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Built</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Description</h3>
+                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{property.description}</p>
+                </div>
+
+                {/* Amenities */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Amenities</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {property.amenities.map((amenity, index) => (
+                      <Badge key={index} variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1">
+                        {amenity}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Property Details */}
                 <div>
-                  <h3 className="text-sm font-medium text-muted-foreground">{t("location")}</h3>
-                  <p className="font-medium">
-                    {propertyData.city}, {propertyData.cityPart}
-                  </p>
-                  <p>
-                    {propertyData.street}, {propertyData.houseNumber}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">{t("floor")}</h3>
-                    <p>
-                      {propertyData.floor} of {propertyData.totalFloors}
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">{t("rooms")}</h3>
-                    <p>{propertyData.rooms}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">{t("area")}</h3>
-                    <p>{propertyData.size} m²</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">{t("heating")}</h3>
-                    <p>{propertyData.heatingType}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">{t("yearBuilt")}</h3>
-                    <p>{propertyData.yearBuilt}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-medium text-muted-foreground">{t("type")}</h3>
-                    <p className="capitalize">{propertyData.propertyType}</p>
+                  <h3 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">Property Details</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <span className="text-gray-600 dark:text-gray-400">Property Type:</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-200 capitalize">{property.propertyType}</span>
+                    </div>
+                    <div className="flex justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <span className="text-gray-600 dark:text-gray-400">Floor:</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-200">
+                        {property.floor} of {property.totalFloors}
+                      </span>
+                    </div>
+                    <div className="flex justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <span className="text-gray-600 dark:text-gray-400">Heating:</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-200">{property.heatingType}</span>
+                    </div>
+                    <div className="flex justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <span className="text-gray-600 dark:text-gray-400">Building Material:</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-200">{property.buildingMaterial}</span>
+                    </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                <div className="border-t pt-4 mt-4">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">{t("contactBroker")}</h3>
-                  <p className="font-medium">{propertyData.owner.name}</p>
-                  <p className="text-sm">{propertyData.owner.phone}</p>
-                  <p className="text-sm">{propertyData.owner.email}</p>
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Contact Owner */}
+            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-lg text-gray-800 dark:text-gray-200">Contact Owner</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                      {property.owner.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800 dark:text-gray-200">{property.owner.name}</div>
+                      <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                        <Star className="h-3 w-3 text-yellow-500 mr-1 fill-yellow-500" />
+                        {property.owner.rating} ({property.owner.totalReviews} reviews)
+                      </div>
+                    </div>
+                  </div>
 
-                  <div className="mt-4 space-y-2">
-                    <Button className="w-full">{t("contactBroker")}</Button>
-                    <Button variant="outline" className="w-full">
-                      {t("scheduleViewing")}
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{property.owner.description}</p>
+
+                  <Separator className="bg-gray-200 dark:bg-gray-700" />
+
+                  <div className="space-y-3">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white">
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call {property.owner.phone}
+                    </Button>
+                    <Button variant="outline" className="w-full border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Message
                     </Button>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            {/* Schedule Viewing */}
+            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-lg text-gray-800 dark:text-gray-200">Schedule Viewing</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Book a viewing to see this property in person</p>
+                  <Button className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Book Viewing
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-lg text-gray-800 dark:text-gray-200">Quick Stats</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between p-2">
+                    <span className="text-gray-600 dark:text-gray-400">Listed:</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-200">2 days ago</span>
+                  </div>
+                  <div className="flex justify-between p-2">
+                    <span className="text-gray-600 dark:text-gray-400">Views:</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-200">127</span>
+                  </div>
+                  <div className="flex justify-between p-2">
+                    <span className="text-gray-600 dark:text-gray-400">Inquiries:</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-200">8</span>
+                  </div>
+                  <div className="flex justify-between p-2">
+                    <span className="text-gray-600 dark:text-gray-400">Status:</span>
+                    <Badge className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Available</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
   )
 }
-
