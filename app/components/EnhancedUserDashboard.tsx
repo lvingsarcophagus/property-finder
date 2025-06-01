@@ -232,7 +232,7 @@ export default function EnhancedUserDashboard() {
     phoneNumber: "",
     description: "",
     address: "",
-    date: new Date(),
+    date: new Date(), // This initializes with current date and time
     reminder: true,
     reminderType: "day",
     reminderTime: 1,
@@ -240,6 +240,8 @@ export default function EnhancedUserDashboard() {
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [showSchedule, setShowSchedule] = useState(false)
+  const [showNewEventDialog, setShowNewEventDialog] = useState(false)
+  const [isEventDatePickerOpen, setIsEventDatePickerOpen] = useState(false)
   const [newListing, setNewListing] = useState({
     title: "",
     price: 0,
@@ -295,10 +297,35 @@ export default function EnhancedUserDashboard() {
   const triggerFileInput = () => {
     fileInputRef.current?.click()
   }
-
   const handleAddEvent = () => {
-    const newId = events.length > 0 ? Math.max(...events.map((e) => e.id)) + 1 : 1
-    setEvents([...events, { ...newEvent, id: newId }])
+    const newId = events.length > 0 ? Math.max(...events.map((e) => e.id)) + 1 : 1;
+    
+    // Construct the event object based on its type
+    const eventToAdd: {
+      id: number;
+      type: "call" | "meeting";
+      clientName: string;
+      phoneNumber: string;
+      date: Date;
+      reminder: boolean;
+      description?: string;
+      address?: string;
+    } = {
+      id: newId,
+      type: newEvent.type as "call" | "meeting",
+      clientName: newEvent.clientName,
+      phoneNumber: newEvent.phoneNumber,
+      date: newEvent.date,
+      reminder: newEvent.reminder,
+    };
+
+    if (newEvent.type === "call") {
+      eventToAdd.description = newEvent.description;
+    } else if (newEvent.type === "meeting") {
+      eventToAdd.address = newEvent.address;
+    }
+
+    setEvents([...events, eventToAdd]);
 
     let reminderText = ""
     if (newEvent.reminder) {
@@ -312,6 +339,9 @@ export default function EnhancedUserDashboard() {
       title: "Event scheduled",
       description: `${newEvent.type === "call" ? "Call" : "Meeting"} with ${newEvent.clientName} on ${format(newEvent.date, "PPP")} at ${format(newEvent.date, "p")}. ${reminderText}`,
     })
+    
+    // Close the dialog after scheduling the event
+    setShowNewEventDialog(false)
   }
 
   const handleDeleteEvent = (id: number) => {
@@ -684,13 +714,7 @@ export default function EnhancedUserDashboard() {
                   <Calendar
                     mode="single"
                     selected={date}
-                    onSelect={(newDate) => {
-                      setDate(newDate)
-                      // Open schedule dialog automatically when a date is selected
-                      if (newDate && selectedDateEvents.length > 0) {
-                        setShowSchedule(true)
-                      }
-                    }}
+                    onSelect={(selectedDate) => setDate(selectedDate)}
                     className="rounded-md border"
                     style={calendarStyles}
                     modifiers={{
@@ -706,11 +730,9 @@ export default function EnhancedUserDashboard() {
                       hasEvent: "bg-primary/20",
                     }}
                   />
-                </div>
-
-                <Dialog>
+                </div>                <Dialog open={showNewEventDialog} onOpenChange={setShowNewEventDialog}>
                   <DialogTrigger asChild>
-                    <Button className="w-full mt-6">
+                    <Button className="w-full mt-6" onClick={() => setShowNewEventDialog(true)}>
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       Schedule New Event
                     </Button>
@@ -795,7 +817,7 @@ export default function EnhancedUserDashboard() {
                           Date & Time
                         </Label>
                         <div className="col-span-3">
-                          <Popover>
+                          <Popover open={isEventDatePickerOpen} onOpenChange={setIsEventDatePickerOpen}>
                             <PopoverTrigger asChild>
                               <Button
                                 variant={"outline"}
@@ -803,6 +825,7 @@ export default function EnhancedUserDashboard() {
                                   "w-full justify-start text-left font-normal",
                                   !newEvent.date && "text-muted-foreground",
                                 )}
+                                onClick={() => setIsEventDatePickerOpen(true)} 
                               >
                                 <CalendarIcon className="mr-2 h-4 w-4" />
                                 {newEvent.date ? format(newEvent.date, "PPP") : <span>Pick a date</span>}
@@ -812,7 +835,20 @@ export default function EnhancedUserDashboard() {
                               <Calendar
                                 mode="single"
                                 selected={newEvent.date}
-                                onSelect={(date) => date && setNewEvent({ ...newEvent, date })}
+                                onSelect={(selectedCalDate: Date | undefined) => {
+                                  if (selectedCalDate) {
+                                    const currentTime = new Date(newEvent.date); // Get current time from newEvent.date
+                                    const newFullDate = new Date(selectedCalDate); // This is the new date, defaults to midnight
+                                    
+                                    newFullDate.setHours(currentTime.getHours());
+                                    newFullDate.setMinutes(currentTime.getMinutes());
+                                    newFullDate.setSeconds(currentTime.getSeconds());
+                                    newFullDate.setMilliseconds(currentTime.getMilliseconds());
+
+                                    setNewEvent(prevEvent => ({ ...prevEvent, date: newFullDate }));
+                                  }
+                                  setIsEventDatePickerOpen(false); 
+                                }}
                                 initialFocus
                               />
                             </PopoverContent>

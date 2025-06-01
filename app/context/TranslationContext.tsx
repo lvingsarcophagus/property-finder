@@ -18,12 +18,11 @@ const TranslationContext = createContext<TranslationContextType>({
 export function TranslationProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>("en")
   const [mounted, setMounted] = useState(false)
-
   // Only run on client side
   useEffect(() => {
     setMounted(true)
     const savedLanguage = localStorage.getItem("preferredLanguage") as Language
-    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "lt")) {
+    if (savedLanguage && (savedLanguage === "en" || savedLanguage === "lt" || savedLanguage === "ru")) {
       setLanguage(savedLanguage)
     }
   }, [])

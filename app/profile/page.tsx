@@ -16,6 +16,7 @@ import { useAuth } from "../context/AuthContext"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import UserProfile from "../../components/UserProfile"
+import Link from "next/link" // Added Link import
 
 // Mock user data - in a real app, this would come from your backend
 const mockUserData = {
@@ -185,6 +186,7 @@ export default function ProfilePage() {
                 <TabsTrigger value="edit">Edit Profile</TabsTrigger>
                 <TabsTrigger value="activity">Activity</TabsTrigger>
                 <TabsTrigger value="listings">My Listings</TabsTrigger>
+                <TabsTrigger value="subscriptions">{t("subscriptionsTab")}</TabsTrigger> {/* Added Subscriptions Tab Trigger */}
               </TabsList>
 
               <TabsContent value="edit">
@@ -339,6 +341,21 @@ export default function ProfilePage() {
                         <a href="/listings/new">Add New Listing</a>
                       </Button>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Added Subscriptions Tab Content */}
+              <TabsContent value="subscriptions">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t("subscriptionsTitle")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-4">{t("manageYourSubscriptionPrompt")}</p> {/* Assuming this key will be added */}
+                    <Button asChild>
+                      <Link href="/subscriptions">{t("goToSubscriptionsPageButton")}</Link>{/* Assuming this key will be added */}
+                    </Button>
                   </CardContent>
                 </Card>
               </TabsContent>

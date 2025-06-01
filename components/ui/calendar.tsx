@@ -3,10 +3,18 @@
 import * as React from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { DayPicker } from "react-day-picker"
-import { de } from 'date-fns/locale' // Add German locale for European date format
+import { de, ru, enUS } from 'date-fns/locale' // Import locales
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { useTranslation } from "@/app/context/TranslationContext"
+
+// Create an object mapping language codes to date-fns locales
+const localeMap = {
+  en: enUS,
+  lt: de, // We'll use German format for Lithuanian as there's no built-in Lithuanian locale
+  ru: ru
+}
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
@@ -14,20 +22,23 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
-  locale = de, // Set default locale to German for DD.MM.YYYY format
+  locale,
   formatters,
   ...props
 }: CalendarProps) {
+  const { language } = useTranslation()
+  const selectedLocale = locale || localeMap[language as keyof typeof localeMap] || enUS;
+  
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
-      locale={locale}
+      locale={selectedLocale}
       formatters={{
         ...formatters,
-        // Override formatters to use European date format if needed
+        // Override formatters to use appropriate date format based on selected locale
         formatCaption: (date, options) => {
-          return `${date.toLocaleString(locale?.code || 'de', { month: 'long' })} ${date.getFullYear()}`;
+          return `${date.toLocaleString(selectedLocale?.code || 'en', { month: 'long' })} ${date.getFullYear()}`;
         }
       }}
       classNames={{

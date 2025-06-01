@@ -91,18 +91,17 @@ export default function Header() {
                       <span className="max-w-[100px] truncate">{user?.name || "User"}</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuContent align="end">                    <DropdownMenuLabel>{t("myAccount")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard">Dashboard</Link>
+                      <Link href="/dashboard">{t("dashboard")}</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href="/profile">My Profile</Link>
+                      <Link href="/profile">{t("myProfile")}</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                       <LogOut className="w-4 h-4 mr-2" />
-                      Logout
+                      {t("logout")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -174,15 +173,14 @@ export default function Header() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <User className="h-5 w-5 text-primary" />
-                <span>My Profile</span>
+                <span>{t("myProfile")}</span>
               </Link>
             )}
 
             <div className="flex flex-col space-y-2 pt-2 border-t border-border/40">
-              {isAuthenticated ? (
-                <Button variant="destructive" onClick={handleLogout} className="justify-start">
+              {isAuthenticated ? (                <Button variant="destructive" onClick={handleLogout} className="justify-start">
                   <LogOut className="w-5 h-5 mr-2" />
-                  Logout
+                  {t("logout")}
                 </Button>
               ) : (
                 <>

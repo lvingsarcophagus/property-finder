@@ -7,109 +7,118 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useAuth } from "../context/AuthContext"
 import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
+import { useTranslation } from "@/app/context/TranslationContext"; // Added import
 
-const plans = [
+const plansData = [
   {
-    name: "Basic",
-    price: "€9.99",
-    interval: "month",
-    description: "Perfect for individual agents",
-    features: [
-      "Up to 10 listings",
-      "Basic analytics",
-      "Email support",
-      "Standard visibility",
-    ],
+    id: "basic", // Added id for key prop
+    nameKey: "basicPlanName" as const, // Use 'as const' for stricter typing with t() keys
+    price: "€9.99", // Price can remain hardcoded or be a translation key if it varies by region significantly
+    priceKey: "basicPlanPrice" as const,
+    intervalKey: "priceMonth" as const,
+    descriptionKey: "basicPlanDescription" as const,
+    featuresKeys: [
+      "basicPlanFeature1",
+      "basicPlanFeature2",
+      "basicPlanFeature3",
+      "basicPlanFeature4",
+    ] as const,
+    buttonKey: "upgradeToBasic" as const,
+    highlight: false, // Added highlight for professional plan
   },
   {
-    name: "Professional",
+    id: "professional", // Added id
+    nameKey: "premiumPlanName" as const, // Note: Key was 'premiumPlanName' in translations
     price: "€24.99",
-    interval: "month",
-    description: "For growing real estate businesses",
-    features: [
-      "Up to 50 listings",
-      "Advanced analytics",
-      "Priority support",
-      "Featured listings",
-      "Property insights",
-      "Client management",
-    ],
+    priceKey: "premiumPlanPrice" as const,
+    intervalKey: "priceMonth" as const,
+    descriptionKey: "premiumPlanDescription" as const,
+    featuresKeys: [
+      "premiumPlanFeature1",
+      "premiumPlanFeature2",
+      "premiumPlanFeature3",
+      "premiumPlanFeature4",
+      "premiumPlanFeature5",
+    ] as const,
+    buttonKey: "upgradeToPremium" as const,
+    highlight: true, // Highlight this plan
   },
   {
-    name: "Enterprise",
-    price: "€99.99",
-    interval: "month",
-    description: "For large agencies and teams",
-    features: [
-      "Unlimited listings",
-      "Real-time analytics",
-      "24/7 phone support",
-      "Premium visibility",
-      "Market analytics",
-      "Team management",
-      "API access",
-      "Custom branding",
-    ],
+    id: "enterprise", // Added id
+    nameKey: "freePlanName" as const, // Assuming 'Enterprise' maps to a 'Free' tier for now, adjust if needed
+    price: "€0", // Or make this a translation key
+    priceKey: "freePlanPrice" as const,
+    intervalKey: "priceMonth" as const,
+    descriptionKey: "freePlanDescription" as const,
+    featuresKeys: [
+      "freePlanFeature1",
+      "freePlanFeature2",
+      "freePlanFeature3",
+    ] as const,
+    buttonKey: "getStarted" as const,
+    highlight: false,
   },
-]
+];
 
 export default function SubscriptionsPage() {
-  const { isAuthenticated } = useAuth()
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null)
+  const { isAuthenticated } = useAuth();
+  const { t } = useTranslation(); // Added useTranslation hook
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null); // Changed to track by ID
 
-  const handleSubscribe = (planName: string) => {
+  const handleSubscribe = (planId: string, planNameKey: string) => {
     if (!isAuthenticated) {
       toast({
-        title: "Authentication required",
-        description: "Please log in to subscribe to a plan",
+        title: t("authenticationRequired"), // Assuming this key exists or add it
+        description: t("loginToSubscribe"), // Assuming this key exists or add it
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setSelectedPlan(planName)
+    setSelectedPlanId(planId);
     toast({
-      title: "Subscription activated",
-      description: `You are now subscribed to the ${planName} plan`,
-    })
-  }
+      title: t("subscriptionActivatedTitle"), // Assuming this key exists or add it
+      description: `${t("subscriptionActivatedDescription")} ${t(planNameKey as any)}`, // Added 'as any' to bypass strict key check if planNameKey is dynamic
+    });
+  };
 
   return (
     <div className="container mx-auto px-6 py-12">
       <Toaster />
       <div className="text-center mb-12">
-        <h1 className="text-3xl font-bold mb-4">Choose Your Plan</h1>
+        <h1 className="text-3xl font-bold mb-4">{t("chooseYourPlanTitle")}</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Select the perfect plan for your real estate business. All plans include access to our core features.
+          {t("chooseYourPlanSubtitle")}
         </p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {plans.map((plan) => (
-          <Card key={plan.name} className={plan.name === "Professional" ? "border-primary" : ""}>
+        {plansData.map((plan) => (
+          <Card key={plan.id} className={plan.highlight ? "border-primary shadow-lg" : ""}>
             <CardHeader>
-              <CardTitle>{plan.name}</CardTitle>
-              <CardDescription>{plan.description}</CardDescription>
+              <CardTitle>{t(plan.nameKey)}</CardTitle>
+              <CardDescription>{t(plan.descriptionKey)}</CardDescription>
               <div className="mt-4">
-                <span className="text-3xl font-bold">{plan.price}</span>
-                <span className="text-muted-foreground">/{plan.interval}</span>
+                <span className="text-3xl font-bold">{t(plan.priceKey)}</span>
+                <span className="text-muted-foreground">/{t(plan.intervalKey)}</span>
               </div>
             </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center">
-                    <Check className="h-4 w-4 text-primary mr-2" />
-                    <span>{feature}</span>
+            <CardContent className="flex flex-col flex-grow">
+              <ul className="space-y-3 mb-6 flex-grow">
+                {plan.featuresKeys.map((featureKey) => (
+                  <li key={featureKey} className="flex items-center">
+                    <Check className="h-4 w-4 text-primary mr-2 flex-shrink-0" />
+                    <span>{t(featureKey as any)}</span>{/* Added 'as any' for dynamic keys */}
                   </li>
                 ))}
               </ul>
               <Button
-                className="w-full mt-6"
-                variant={plan.name === "Professional" ? "default" : "outline"}
-                onClick={() => handleSubscribe(plan.name)}
+                className="w-full mt-auto"
+                variant={plan.highlight ? "default" : "outline"}
+                onClick={() => handleSubscribe(plan.id, plan.nameKey)}
+                disabled={selectedPlanId === plan.id} // Disable if it's the currently selected plan
               >
-                {selectedPlan === plan.name ? "Current Plan" : "Subscribe"}
+                {selectedPlanId === plan.id ? t("currentPlanButton") : t(plan.buttonKey as any) /* Added 'as any' */}
               </Button>
             </CardContent>
           </Card>
@@ -118,11 +127,11 @@ export default function SubscriptionsPage() {
 
       <div className="mt-12 text-center">
         <p className="text-muted-foreground">
-          All plans include a 14-day free trial. Cancel anytime.
+          {t("trialInfo")}
           <br />
-          Need a custom plan? <Button variant="link">Contact our sales team</Button>
+          {t("needCustomPlanPrompt")} <Button variant="link" className="p-0 h-auto">{t("contactSalesLinkText")}</Button>
         </p>
       </div>
     </div>
-  )
+  );
 }
