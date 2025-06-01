@@ -1,6 +1,5 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -14,7 +13,8 @@ export const createBrowserClient = () => {
 }
 
 // Server-side Supabase client (for server components only)
-export const createServerClient = () => {
+export const createServerClient = async () => {
+  const { cookies } = await import("next/headers")
   return createServerComponentClient({ cookies })
 }
 
