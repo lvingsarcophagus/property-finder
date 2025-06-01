@@ -1,5 +1,4 @@
 [build]
-  publish = ".next"
   command = "npm run build"
 
 [build.environment]
@@ -9,17 +8,16 @@
   # NEXT_PUBLIC_SUPABASE_URL = "https://rasqxsyaqqboilmajvbu.supabase.co"
   # NEXT_PUBLIC_SUPABASE_ANON_KEY = "your-anon-key-here"
 
+# Enable the Next.js plugin
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 # Context-specific deployments
 [context.production.environment]
   NODE_ENV = "production"
 
 [context.deploy-preview.environment]
   NODE_ENV = "development"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
 
 [dev]
   command = "npm run dev"
