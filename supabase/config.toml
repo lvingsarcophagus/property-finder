@@ -1,0 +1,2 @@
+[functions.create-google-calendar-event]
+handler = "file://./functions/create-google-calendar-event/index.ts"
