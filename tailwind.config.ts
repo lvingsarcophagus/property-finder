@@ -43,6 +43,9 @@ export default {
   			border: 'hsl(var(--border))',
   			input: 'hsl(var(--input))',
   			ring: 'hsl(var(--ring))',
+			'calryon-teal': '#008080',
+			'calryon-gray-light': '#f0f4f8',
+			'calryon-gray-dark': '#333333',
   			chart: {
   				'1': 'hsl(var(--chart-1))',
   				'2': 'hsl(var(--chart-2))',
@@ -122,6 +125,9 @@ module.exports = {
 			DEFAULT: "hsl(var(--card))",
 			foreground: "hsl(var(--card-foreground))",
 		  },
+		  'calryon-teal': '#008080',
+		  'calryon-gray-light': '#f0f4f8',
+		  'calryon-gray-dark': '#333333',
 		},
 		borderRadius: {
 		  lg: "var(--radius)",

@@ -1,17 +1,17 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Get environment variables
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
 
 // Client-side Supabase client (safe to use in client components)
 export const createBrowserClient = () => {
   if (!supabaseUrl) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
+    throw new Error('Missing REACT_APP_SUPABASE_URL environment variable')
   }
 
   if (!supabaseAnonKey) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
+    throw new Error('Missing REACT_APP_SUPABASE_ANON_KEY environment variable')
   }
 
   return createClient(supabaseUrl, supabaseAnonKey, {

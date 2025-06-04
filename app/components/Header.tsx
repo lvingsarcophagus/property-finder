@@ -22,9 +22,13 @@ import {
   Users,
   Calendar,
   MessageSquare,
-  Home,
+  // Home, // Removed as it's not actively used in the current nav setup
   Plus,
   HelpCircle,
+  Info,
+  Briefcase,
+  BookOpen,
+  Award,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -95,6 +99,42 @@ export default function Header() {
       icon: MessageSquare,
       description: "Communications",
     },
+    {
+      name: t("bookAppointment"),
+      href: "/book-appointment",
+      icon: Plus,
+      description: "Schedule a new appointment",
+    },
+    {
+      name: t("contactUs"),
+      href: "/contact-us",
+      icon: HelpCircle,
+      description: "Get in touch with us",
+    },
+    {
+      name: t("aboutUs"),
+      href: "/about-us",
+      icon: Info,
+      description: "Learn more about Calryon Group",
+    },
+    {
+      name: t("services"),
+      href: "/services",
+      icon: Briefcase,
+      description: "Explore our professional services",
+    },
+    {
+      name: t("blog"),
+      href: "/blog",
+      icon: BookOpen,
+      description: "Read our latest articles and insights",
+    },
+    {
+      name: t("testimonials"),
+      href: "/testimonials",
+      icon: Award,
+      description: "See what our clients are saying",
+    },
   ]
 
   const languages = [
@@ -127,17 +167,12 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="relative">
-              <Building2 className="h-9 w-9 text-blue-600 dark:text-blue-400 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3" />
-              <div className="absolute -inset-1 bg-blue-600/20 dark:bg-blue-400/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 dark:from-blue-400 dark:via-purple-400 dark:to-blue-300 bg-clip-text text-transparent">
-                PropertyPro
-              </span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Real Estate Platform</span>
-            </div>
+          <Link href="/" className="flex items-center">
+            {/* Placeholder for actual Calryon Group logo image if available */}
+            {/* <img src="/calryon-logo.png" alt="Calryon Group" className="h-8 w-auto" /> */}
+            <span className="text-2xl font-bold text-gray-800 dark:text-white">
+              Calryon Group
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -347,8 +382,23 @@ export default function Header() {
                 </DropdownMenu>
               </>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" asChild className="rounded-xl">
+              <div className="flex items-center space-x-1 md:space-x-2">
+                <Button variant="ghost" asChild className="rounded-xl text-sm sm:text-base px-2 sm:px-3">
+                  <Link href="/about-us">About Us</Link>
+                </Button>
+                <Button variant="ghost" asChild className="rounded-xl text-sm sm:text-base px-2 sm:px-3">
+                  <Link href="/services">Services</Link>
+                </Button>
+                <Button variant="ghost" asChild className="rounded-xl text-sm sm:text-base px-2 sm:px-3">
+                  <Link href="/blog">Blog</Link>
+                </Button>
+                 <Button variant="ghost" asChild className="rounded-xl text-sm sm:text-base px-2 sm:px-3">
+                  <Link href="/testimonials">Testimonials</Link>
+                </Button>
+                <Button variant="ghost" asChild className="rounded-xl text-sm sm:text-base px-2 sm:px-3">
+                  <Link href="/contact-us">Contact Us</Link>
+                </Button>
+                <Button variant="ghost" asChild className="rounded-xl text-sm sm:text-base px-2 sm:px-3">
                   <Link href="/login">Sign In</Link>
                 </Button>
                 <Button

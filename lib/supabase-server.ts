@@ -5,8 +5,8 @@ import { cookies } from "next/headers"
 
 // Server-side Supabase client (for server components, server actions, route handlers)
 export const createServerClient = () => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL!
+  const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY!
   
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {

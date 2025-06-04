@@ -46,6 +46,15 @@ export type TranslationKey =
   | "new"
   | "sold"
   | "pending"
+  | "home"
+  | "bookAppointment"
+  | "contactUs"
+  | "services"
+  | "aboutUs"
+  | "blog"
+  | "testimonials"
+  | "privacyPolicy"
+  | "gdpr"
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   en: {
@@ -94,6 +103,15 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     new: "New",
     sold: "Sold",
     pending: "Pending",
+    home: "Home",
+    bookAppointment: "Book Appointment",
+    contactUs: "Contact Us",
+    services: "Services",
+    aboutUs: "About Us",
+    blog: "Blog",
+    testimonials: "Testimonials",
+    privacyPolicy: "Privacy Policy",
+    gdpr: "GDPR",
   },
   lt: {
     dashboard: "Valdymo skydas",
@@ -141,6 +159,15 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     new: "Naujas",
     sold: "Parduotas",
     pending: "Laukiantis",
+    home: "[LT] Home",
+    bookAppointment: "[LT] Book Appointment",
+    contactUs: "[LT] Contact Us",
+    services: "[LT] Services",
+    aboutUs: "[LT] About Us",
+    blog: "[LT] Blog",
+    testimonials: "[LT] Testimonials",
+    privacyPolicy: "[LT] Privacy Policy",
+    gdpr: "[LT] GDPR",
   },
   ru: {
     dashboard: "Панель управления",
@@ -188,5 +215,14 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     new: "Новый",
     sold: "Продан",
     pending: "В ожидании",
+    home: "[RU] Home",
+    bookAppointment: "[RU] Book Appointment",
+    contactUs: "[RU] Contact Us",
+    services: "[RU] Services",
+    aboutUs: "[RU] About Us",
+    blog: "[RU] Blog",
+    testimonials: "[RU] Testimonials",
+    privacyPolicy: "[RU] Privacy Policy",
+    gdpr: "[RU] GDPR",
   },
 }
